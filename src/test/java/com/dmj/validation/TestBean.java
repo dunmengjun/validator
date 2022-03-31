@@ -7,6 +7,7 @@ import com.dmj.validation.constraint.Union;
 import com.dmj.validation.validator.impl.AnyMatch;
 
 @Union(unions = AnyNotEmpty.class, validatedBy = AnyMatch.class)
+@Configuration(type = ValidationType.OR)
 public class TestBean {
 
   @NotNull

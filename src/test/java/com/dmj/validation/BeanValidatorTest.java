@@ -7,6 +7,7 @@ public class BeanValidatorTest {
   @Test
   void test() {
     TestBean bean = new TestBean();
-    BeanValidator.validate(bean);
+    ValidationResult validate = BeanValidator.validate(bean);
+    System.out.println(validate);
   }
 }

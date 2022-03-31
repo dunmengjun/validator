@@ -37,7 +37,7 @@ public @interface NotBlank {
 
   String message() default "{javax.validation.constraints.NotBlank.message}";
 
-  Class<?>[] groups() default {};
+  Class<?>[] groups() default {Default.class};
 
   Class<?>[] unions() default {};
 
