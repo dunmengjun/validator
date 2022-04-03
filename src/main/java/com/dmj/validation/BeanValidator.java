@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 public class BeanValidator {
 
@@ -24,35 +26,36 @@ public class BeanValidator {
 
   public static ValidationResult validate(Object bean, Class<?> group) {
     ValidationBean validationBean = ValidationBeanLayout.get(bean, group);
-    return validate(validationBean);
+    return validate(validationBean, bean);
   }
 
-  public static ValidationResult validate(ValidationBean bean) {
-    ConfigurationValue configuration = bean.getConfiguration();
+  public static ValidationResult validate(ValidationBean validationBean, Object bean) {
+    ConfigurationValue configuration = validationBean.getConfiguration();
     ValidationType validationType = configuration.getValidationType();
-    Stream<PartValidator> partValidatorStream = bean.getUnionValidationMap().values().stream()
-        .map(BeanValidator::toPartValidator)
+    Stream<PartValidator> partValidatorStream = validationBean.getValidationUnionMap()
+        .values().stream()
+        .map(validationUnion -> toPartValidator(validationUnion, bean))
         .filter(validator -> !validator.valid());
-    if (ValidationType.AND.equals(validationType)) {
+    if (ValidationType.AllMatch.equals(validationType)) {
       return partValidatorStream
           .findAny()
-          .map(validator -> ValidationResult.error(validator.getResult()))
+          .map(validator -> ValidationResult.error(validator.getResults()))
           .orElse(ValidationResult.ok());
     } else {
       List<UnionResult> unionResults = partValidatorStream
-          .flatMap(partValidator -> partValidator.getResult().stream())
+          .flatMap(partValidator -> partValidator.getResults().stream())
           .collect(Collectors.toList());
       return new ValidationResult(unionResults);
     }
   }
 
-  private static PartValidator toPartValidator(ValidationUnion validationUnion) {
+  private static PartValidator toPartValidator(ValidationUnion validationUnion, Object bean) {
     UnionValue unionValue = validationUnion.getUnionValue();
     List<UnionValidator> validators = unionValue.getValidatedBy().stream()
         .map(BeanValidator::createValidator)
         .collect(Collectors.toList());
     Map<String, FieldValidator> fieldValidatorMap = validationUnion.getFieldMap().values().stream()
-        .map(BeanValidator::toFieldValidator)
+        .map(validationField -> toFieldValidator(validationField, bean))
         .collect(Collectors.toMap(FieldValidator::getPath, v -> v));
     return PartValidator.builder()
         .message(unionValue.getMessage())
@@ -61,18 +64,27 @@ public class BeanValidator {
         .build();
   }
 
-  private static FieldValidator toFieldValidator(ValidationField field) {
+  private static FieldValidator toFieldValidator(ValidationField field, Object bean) {
     List<TypedConstraintValidator> constraintValidators = field.getValidatedBy()
         .stream()
         .map(BeanValidator::createValidator)
         .map(TypedConstraintValidator::new)
         .collect(Collectors.toList());
+    FieldValue fieldValue = field.getFieldPath().getFieldValue(bean);
     return FieldValidator.builder()
-        .path(field.getName())
-        .value(field.getValue())
+        .path(fieldValue.getPath())
+        .value(fieldValue.getValue())
         .message(field.getMessage())
         .validators(constraintValidators)
         .build();
+  }
+
+  @AllArgsConstructor
+  @Getter
+  static class FieldValue {
+
+    private String path;
+    private Object value;
   }
 
   private static <T> T createValidator(

@@ -18,6 +18,6 @@ public class ConfigurationValue {
   }
 
   public static ConfigurationValue defaultValue() {
-    return new ConfigurationValue(ValidationType.AND);
+    return new ConfigurationValue(ValidationType.AllMatch);
   }
 }

@@ -2,8 +2,8 @@ package com.dmj.validation;
 
 import com.dmj.validation.constraint.Union;
 import com.dmj.validation.utils.Lists;
-import com.dmj.validation.validator.DefaultUnionValidator;
 import com.dmj.validation.validator.UnionValidator;
+import com.dmj.validation.validator.union.AllMatch;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,6 +21,6 @@ public class UnionValue {
   }
 
   public static UnionValue empty() {
-    return new UnionValue(null, Lists.of(DefaultUnionValidator.class));
+    return new UnionValue(null, Lists.of(AllMatch.class));
   }
 }

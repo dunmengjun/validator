@@ -1,5 +1,8 @@
 package com.dmj.validation.validator;
 
+import static com.dmj.validation.validator.FieldValidator.NO_VALID;
+import static com.dmj.validation.validator.FieldValidator.VALID;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -14,18 +17,15 @@ public class ValidatorContext {
     return Optional.ofNullable(validatorMap.get(name)).map(FieldValidator::valid).orElse(false);
   }
 
-  public boolean validAll() {
-    return validatorMap.values().stream().allMatch(FieldValidator::valid);
-  }
-
   public Set<String> getFields() {
     return validatorMap.keySet();
   }
 
-  public boolean valid(String name, ConstraintValidator<Object> validator) {
+  @SuppressWarnings("unchecked")
+  public <T> boolean valid(String name, ConstraintValidator<T> validator) {
     return Optional.ofNullable(validatorMap.get(name)).map(fieldValidator -> {
-      boolean valid = validator.valid(fieldValidator.getValue());
-      fieldValidator.setStatus(valid ? 1 : -1);
+      boolean valid = validator.valid((T) fieldValidator.getValue());
+      fieldValidator.setStatus(valid ? VALID : NO_VALID);
       return valid;
     }).orElse(false);
   }

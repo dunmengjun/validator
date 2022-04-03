@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface Configuration {
 
-  ValidationType type() default ValidationType.AND;
+  ValidationType type() default ValidationType.AllMatch;
 
   Class<?>[] groups() default {Default.class};
 }

@@ -12,7 +12,7 @@ public class BeanValidatorTest {
 
     ValidationResult actual = BeanValidator.validate(bean);
 
-    assertEquals(3, actual.getResults().size());
+    assertEquals(5, actual.getResults().size());
   }
 
   @Test
@@ -22,6 +22,8 @@ public class BeanValidatorTest {
     bean.setId(1L);
     bean.setName("alice");
     bean.setType("type");
+    InnerBean innerBean = new InnerBean();
+    bean.setInnerBean(innerBean);
 
     ValidationResult actual = BeanValidator.validate(bean);
 
