@@ -1,7 +1,10 @@
 package com.dmj.validation;
 
 import com.dmj.validation.constraint.Union;
+import com.dmj.validation.utils.Lists;
+import com.dmj.validation.validator.DefaultUnionValidator;
 import com.dmj.validation.validator.UnionValidator;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,9 +14,13 @@ public class UnionValue {
 
   private String message;
 
-  private Class<? extends UnionValidator>[] validatedBy;
+  private List<Class<? extends UnionValidator>> validatedBy;
 
   public static UnionValue from(Union union) {
-    return new UnionValue(union.message(), union.validatedBy());
+    return new UnionValue(union.message(), Lists.of(union.validatedBy()));
+  }
+
+  public static UnionValue empty() {
+    return new UnionValue(null, Lists.of(DefaultUnionValidator.class));
   }
 }

@@ -1,5 +1,7 @@
 package com.dmj.validation;
 
+import static java.util.stream.Collectors.toList;
+
 import com.dmj.validation.constraint.Constraint;
 import com.dmj.validation.constraint.Default;
 import com.dmj.validation.constraint.Union;
@@ -20,7 +22,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -33,12 +34,12 @@ public class ValidationBeanLayout {
 
   @AllArgsConstructor
   @Getter
-  private static class ValidationField {
+  static class ValidationField {
 
     private String name;
     private Object value;
     private String message;
-    private List<Class<? extends ConstraintValidator<?>>> validatedList;
+    private List<Class<? extends ConstraintValidator<?>>> validatedBy;
 
     public static ValidationField fromConstraint(String name, Object obj, Constraint constraint) {
       return new ValidationField(name, obj, constraint.message(),
@@ -59,21 +60,21 @@ public class ValidationBeanLayout {
 
   @Getter
   @AllArgsConstructor
-  private static class UnionValidation {
+  static class ValidationUnion {
 
     private UnionValue unionValue;
     private Map<String, ValidationField> fieldMap;
 
-    public static UnionValidation from(UnionValue value) {
-      return new UnionValidation(value, new HashMap<>());
+    public static ValidationUnion from(UnionValue value) {
+      return new ValidationUnion(value, new HashMap<>());
     }
 
 
-    public static UnionValidation from(ValidationField value) {
-      return new UnionValidation(null, Maps.of(value.getName(), value));
+    public static ValidationUnion from(ValidationField value) {
+      return new ValidationUnion(UnionValue.empty(), Maps.of(value.getName(), value));
     }
 
-    public void add(UnionValidation validation) {
+    public void add(ValidationUnion validation) {
       if (this.unionValue == null) {
         this.unionValue = validation.unionValue;
       }
@@ -82,19 +83,19 @@ public class ValidationBeanLayout {
   }
 
   @AllArgsConstructor
+  @Getter
   static class ValidationBean {
 
     private ConfigurationValue configuration;
-    private Map<Integer, UnionValidation> unionValidationMap;
+    private Map<Integer, ValidationUnion> unionValidationMap;
 
     public static ValidationBean empty() {
       return new ValidationBean(ConfigurationValue.defaultValue(), new HashMap<>());
     }
 
-    public void setUnionValidation(List<Integer> unions, UnionValidation validation) {
+    public void setUnionValidation(List<Integer> unions, ValidationUnion validation) {
       unions.forEach(union -> {
-        UnionValidation currentUnion = unionValidationMap.computeIfAbsent(union,
-            u -> validation);
+        ValidationUnion currentUnion = unionValidationMap.computeIfAbsent(union, u -> validation);
         if (currentUnion != validation) {
           currentUnion.add(validation);
         }
@@ -135,7 +136,7 @@ public class ValidationBeanLayout {
           Asserts.assertNotEmpty(unions, UnionAnnotationException::new);
           Asserts.assertNotNull(union.message(), UnionAnnotationException::new);
           UnionValue value = UnionValue.from(union);
-          UnionValidation from = UnionValidation.from(value);
+          ValidationUnion from = ValidationUnion.from(value);
           setUnionValidation(groupMap, groups, unions, from);
         } else {
           initValidationField(bean, groupMap, simpleName, classAnnotation, groups);
@@ -162,37 +163,32 @@ public class ValidationBeanLayout {
       String simpleName, Annotation classAnnotation, List<Class<?>> groups) {
     if (classAnnotation instanceof Constraint) {
       Constraint constraint = (Constraint) classAnnotation;
-      List<Integer> unions = mapOrDefault(constraint.unions(),
-          Objects::hashCode,
+      List<Integer> unions = mapOrDefault(constraint.unions(), Objects::hashCode,
           Lists.of(constraint.hashCode()));
       ValidationField field = ValidationField.fromConstraint(simpleName, bean, constraint);
-      UnionValidation from = UnionValidation.from(field);
+      ValidationUnion from = ValidationUnion.from(field);
       setUnionValidation(groupMap, groups, unions, from);
     } else {
       Class<?>[] unionsClasses = invoke(classAnnotation, "unions", new Class<?>[]{});
-      List<Integer> unions = mapOrDefault(unionsClasses,
-          Objects::hashCode,
+      List<Integer> unions = mapOrDefault(unionsClasses, Objects::hashCode,
           Lists.of(classAnnotation.hashCode()));
-      ValidationField.fromAnnotation(simpleName, bean, classAnnotation)
-          .ifPresent(field -> {
-            UnionValidation from = UnionValidation.from(field);
-            setUnionValidation(groupMap, groups, unions, from);
-          });
+      ValidationField.fromAnnotation(simpleName, bean, classAnnotation).ifPresent(field -> {
+        ValidationUnion from = ValidationUnion.from(field);
+        setUnionValidation(groupMap, groups, unions, from);
+      });
     }
   }
 
-  private static <T, R> List<R> mapOrDefault(T[] array,
-      Function<T, R> mapFunction,
+  private static <T, R> List<R> mapOrDefault(T[] array, Function<T, R> mapFunction,
       List<R> defaultValue) {
     if (array == null || array.length == 0) {
       return defaultValue;
     }
-    return Arrays.stream(array).map(mapFunction).collect(Collectors.toList());
+    return Arrays.stream(array).map(mapFunction).collect(toList());
   }
 
   private static void setUnionValidation(Map<Class<?>, ValidationBean> groupMap,
-      List<Class<?>> groups,
-      List<Integer> unions, UnionValidation validation) {
+      List<Class<?>> groups, List<Integer> unions, ValidationUnion validation) {
     groups.forEach(group -> {
       ValidationBean validationBean = groupMap.computeIfAbsent(group, g -> ValidationBean.empty());
       validationBean.setUnionValidation(unions, validation);

@@ -1,13 +1,30 @@
 package com.dmj.validation;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 
 public class BeanValidatorTest {
 
   @Test
-  void test() {
+  void should_return_result_when_validate_bean_given_invalid_fields() {
     TestBean bean = new TestBean();
-    ValidationResult validate = BeanValidator.validate(bean);
-    System.out.println(validate);
+
+    ValidationResult actual = BeanValidator.validate(bean);
+
+    assertEquals(3, actual.getResults().size());
+  }
+
+  @Test
+  void should_return_empty_result_when_validate_bean_given_valid_fields() {
+    TestBean bean = new TestBean();
+    bean.setAge(17);
+    bean.setId(1L);
+    bean.setName("alice");
+    bean.setType("type");
+
+    ValidationResult actual = BeanValidator.validate(bean);
+
+    assertEquals(0, actual.getResults().size());
   }
 }

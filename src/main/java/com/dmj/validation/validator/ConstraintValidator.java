@@ -1,6 +1,7 @@
 package com.dmj.validation.validator;
 
+@FunctionalInterface
 public interface ConstraintValidator<T> {
 
-  boolean isValid(T value, ConstraintValidatorContext context);
+  boolean valid(T value);
 }

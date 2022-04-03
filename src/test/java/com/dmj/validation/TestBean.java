@@ -4,10 +4,12 @@ import com.dmj.validation.TestBean.AnyNotEmpty;
 import com.dmj.validation.constraint.NotBlank;
 import com.dmj.validation.constraint.NotNull;
 import com.dmj.validation.constraint.Union;
-import com.dmj.validation.validator.impl.AnyMatch;
+import com.dmj.validation.validator.union.AnyMatch;
+import lombok.Data;
 
-@Union(unions = AnyNotEmpty.class, validatedBy = AnyMatch.class)
 @Configuration(type = ValidationType.OR)
+@Union(unions = AnyNotEmpty.class, validatedBy = AnyMatch.class)
+@Data
 public class TestBean {
 
   @NotNull

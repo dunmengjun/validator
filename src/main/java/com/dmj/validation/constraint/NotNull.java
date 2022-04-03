@@ -6,14 +6,20 @@
  */
 package com.dmj.validation.constraint;
 
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.ElementType.CONSTRUCTOR;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.TYPE_USE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import com.dmj.validation.constraint.NotNull.List;
+import com.dmj.validation.validator.constraint.NotNullValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * The annotated element must not be {@code null}. Accepts any type.
@@ -24,10 +30,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Repeatable(List.class)
 @Documented
-@Constraint(validatedBy = {})
+@Constraint(validatedBy = NotNullValidator.class)
 public @interface NotNull {
 
-  String message() default "{javax.validation.constraints.NotNull.message}";
+  String message() default "{com.dmj.validation.constraint.NotNull}";
 
   Class<?>[] groups() default {Default.class};
 
