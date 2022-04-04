@@ -1,21 +1,17 @@
-package com.dmj.validation.validator;
+package com.dmj.validation;
 
 import com.dmj.validation.ValidationResult.UnionResult;
 import com.dmj.validation.exception.NotValidatorException;
 import com.dmj.validation.utils.Lists;
+import com.dmj.validation.validator.ConstraintValidator;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Builder
 public class FieldValidator extends SelfValidator {
-
-  protected static int VALID = 1;
-  protected static int INVALID = -1;
-  protected static int NO_VALID = 0;
 
   @Getter
   private String path;
@@ -26,24 +22,15 @@ public class FieldValidator extends SelfValidator {
   @Getter
   private Object value;
 
-  @Getter
-  @Setter
-  private int status;
-
   private List<TypedConstraintValidator> validators;
 
   @Override
-  public boolean valid() {
-    boolean flag = validators.stream().allMatch(validator -> validator.valid(value));
-    this.status = flag ? VALID : INVALID;
-    return flag;
+  public boolean doValid() {
+    return validators.stream().allMatch(validator -> validator.valid(value));
   }
 
   @Override
-  protected List<UnionResult> getResults() {
-    if (INVALID != status) {
-      return Lists.of();
-    }
+  protected List<UnionResult> getInnerResults() {
     return Lists.of(new UnionResult(Lists.of(path), message));
   }
 
@@ -55,10 +42,8 @@ public class FieldValidator extends SelfValidator {
 
     public TypedConstraintValidator(ConstraintValidator<?> validator) {
       ParameterizedType parameterizedType = Arrays.stream(
-              validator.getClass().getGenericInterfaces())
-          .map(t -> (ParameterizedType) t)
-          .filter(t -> t.getRawType().equals(ConstraintValidator.class))
-          .findAny()
+              validator.getClass().getGenericInterfaces()).map(t -> (ParameterizedType) t)
+          .filter(t -> t.getRawType().equals(ConstraintValidator.class)).findAny()
           .orElseThrow(NotValidatorException::new);
       this.type = (Class<?>) parameterizedType.getActualTypeArguments()[0];
       this.validator = validator;

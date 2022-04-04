@@ -1,7 +1,7 @@
 package com.dmj.validation.validator.union;
 
 import com.dmj.validation.validator.UnionValidator;
-import com.dmj.validation.validator.ValidatorContext;
+import com.dmj.validation.ValidatorContext;
 
 public class AnyMatch implements UnionValidator {
 

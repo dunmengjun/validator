@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface Union {
 
-  String message() default "{javax.validation.constraints.Size.message}";
+  String message() default "{com.dmj.validation.constraint.Union}";
 
   Class<?>[] unions() default {};
 

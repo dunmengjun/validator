@@ -14,14 +14,6 @@ public class ValidationResult {
 
   List<UnionResult> results;
 
-  public static ValidationResult ok() {
-    return new ValidationResult(null);
-  }
-
-  public static ValidationResult error(List<UnionResult> results) {
-    return new ValidationResult(results);
-  }
-
   @AllArgsConstructor
   @Getter
   @EqualsAndHashCode
