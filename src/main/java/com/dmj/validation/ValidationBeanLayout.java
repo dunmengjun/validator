@@ -1,12 +1,15 @@
 package com.dmj.validation;
 
+import static com.dmj.validation.ConfigurationValue.DEFAULT_VALUE;
+import static com.dmj.validation.utils.ReflectionUtils.getValue;
+import static com.dmj.validation.utils.ReflectionUtils.invokeMethod;
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
 import com.dmj.validation.BeanValidator.FieldValue;
 import com.dmj.validation.constraint.Constraint;
 import com.dmj.validation.constraint.Default;
 import com.dmj.validation.constraint.Union;
-import com.dmj.validation.exception.ReflectionException;
 import com.dmj.validation.exception.UnionAnnotationException;
 import com.dmj.validation.utils.Asserts;
 import com.dmj.validation.utils.Lists;
@@ -14,8 +17,6 @@ import com.dmj.validation.utils.Maps;
 import com.dmj.validation.validator.ConstraintValidator;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -58,7 +59,7 @@ public class ValidationBeanLayout {
     }
 
     public FieldValue getFieldValue(Object bean) {
-      if (fields == null || fields.isEmpty()) {
+      if (Lists.isEmpty(fields)) {
         return new FieldValue("", bean);
       }
       List<String> names = new ArrayList<>();
@@ -79,8 +80,7 @@ public class ValidationBeanLayout {
     private List<Class<? extends ConstraintValidator<?>>> validatedBy;
 
     public static ValidationField fromConstraint(FieldPath fieldPath, Constraint constraint) {
-      return new ValidationField(fieldPath, constraint.message(),
-          Arrays.asList(constraint.validatedBy()));
+      return new ValidationField(fieldPath, constraint.message(), asList(constraint.validatedBy()));
     }
 
     public static Optional<ValidationField> fromAnnotation(FieldPath fieldPath,
@@ -89,9 +89,9 @@ public class ValidationBeanLayout {
       if (constraint == null) {
         return Optional.empty();
       }
-      String message = invoke(annotation, "message", constraint.message());
+      String message = invokeMethod(annotation, "message", constraint.message());
       return Optional.of(
-          new ValidationField(fieldPath, message, Arrays.asList(constraint.validatedBy())));
+          new ValidationField(fieldPath, message, asList(constraint.validatedBy())));
     }
   }
 
@@ -132,17 +132,11 @@ public class ValidationBeanLayout {
     }
 
     public void setUnionValidation(List<Integer> unions, ValidationUnion validation) {
-      unions.forEach(union -> {
-        ValidationUnion currentUnion = validationUnionMap.computeIfAbsent(union, u -> validation);
-        if (currentUnion != validation) {
-          currentUnion.add(validation);
-        }
-      });
+      unions.forEach(union -> validationUnionMap.merge(union, validation, ValidationUnion::add));
     }
 
     public void setConfiguration(ConfigurationValue value) {
-      if (ConfigurationValue.DEFAULT_VALUE.equals(configuration)
-          && !ConfigurationValue.DEFAULT_VALUE.equals(value)) {
+      if (DEFAULT_VALUE.equals(configuration) && !DEFAULT_VALUE.equals(value)) {
         configuration = value;
       }
     }
@@ -225,7 +219,7 @@ public class ValidationBeanLayout {
       ValidationUnion from = ValidationUnion.from(validationField);
       setUnionValidation(groupMap, groups, unions, from);
     } else {
-      Class<?>[] unionsClasses = invoke(classAnnotation, "unions", new Class<?>[]{});
+      Class<?>[] unionsClasses = invokeMethod(classAnnotation, "unions", new Class<?>[]{});
       List<Integer> unions = mapOrDefault(unionsClasses, Objects::hashCode,
           Lists.of(unionInteger.incrementAndGet()));
       ValidationField.fromAnnotation(fieldPath, classAnnotation).ifPresent(validationField -> {
@@ -261,38 +255,7 @@ public class ValidationBeanLayout {
 
 
   private static List<Class<?>> getGroups(Annotation annotation, List<Class<?>> defaultValue) {
-    Class<?>[] groups = invoke(annotation, "groups", new Class[0]);
-    return groups.length == 0 ? defaultValue : Arrays.asList(groups);
-  }
-
-
-  @SuppressWarnings("unchecked")
-  private static <T> T invoke(Object object, String name, T defaultValue) {
-    try {
-      Method groups = object.getClass().getDeclaredMethod(name);
-      return (T) groups.invoke(object);
-    } catch (NoSuchMethodException e) {
-      return defaultValue;
-    } catch (InvocationTargetException | IllegalAccessException e) {
-      throw new ReflectionException(e);
-    }
-  }
-
-  private static Object getValue(Field field, Object bean) {
-    if (bean == null) {
-      return null;
-    }
-    try {
-      if (field.isAccessible()) {
-        return field.get(bean);
-      } else {
-        field.setAccessible(true);
-        Object o = field.get(bean);
-        field.setAccessible(false);
-        return o;
-      }
-    } catch (IllegalAccessException e) {
-      throw new ReflectionException(e);
-    }
+    Class<?>[] groups = invokeMethod(annotation, "groups", new Class[0]);
+    return groups.length == 0 ? defaultValue : asList(groups);
   }
 }

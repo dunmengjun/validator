@@ -3,16 +3,12 @@ package com.dmj.validation;
 import com.dmj.validation.ValidationResult.UnionResult;
 import com.dmj.validation.utils.Lists;
 import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
 
 public abstract class SelfValidator {
 
   protected static int VALID = 1;
   protected static int INVALID = -1;
 
-  @Getter
-  @Setter
   private int status;
 
   public boolean valid() {
@@ -34,5 +30,9 @@ public abstract class SelfValidator {
 
   public boolean isValid() {
     return status == VALID;
+  }
+
+  protected void setStatus(int status) {
+    this.status = status;
   }
 }
