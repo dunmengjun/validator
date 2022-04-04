@@ -31,4 +31,11 @@ public class BeanValidatorTest {
 
     assertEquals(0, actual.getResults().size());
   }
+
+  @Test
+  void test() {
+    ListBean listBean = new ListBean();
+    ValidationResult validate = BeanValidator.validate(listBean);
+    System.out.println(validate);
+  }
 }

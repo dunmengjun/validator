@@ -14,11 +14,13 @@ import com.dmj.validation.exception.UnionAnnotationException;
 import com.dmj.validation.utils.Asserts;
 import com.dmj.validation.utils.Lists;
 import com.dmj.validation.utils.Maps;
+import com.dmj.validation.utils.ReflectionUtils;
 import com.dmj.validation.validator.ConstraintValidator;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +71,10 @@ public class ValidationBeanLayout {
         bean = getValue(field, bean);
       }
       return new FieldValue(String.join(".", names), bean, fieldClass);
+    }
+
+    public Optional<Field> getField() {
+      return Optional.empty();
     }
   }
 
@@ -125,10 +131,11 @@ public class ValidationBeanLayout {
   static class ValidationBean {
 
     private ConfigurationValue configuration;
+    private Map<FieldPath, ValidationBean> needExtendBeanMap;
     private Map<Integer, ValidationUnion> validationUnionMap;
 
     public static ValidationBean empty() {
-      return new ValidationBean(ConfigurationValue.defaultValue(), new HashMap<>());
+      return new ValidationBean(ConfigurationValue.defaultValue(), Maps.of(), new HashMap<>());
     }
 
     public void setUnionValidation(List<Integer> unions, ValidationUnion validation) {
@@ -149,22 +156,22 @@ public class ValidationBeanLayout {
     }
   }
 
-  public ValidationBean get(Class<?> group) {
-    return validationBeanMap.get(group);
+  public Optional<ValidationBean> get(Class<?> group) {
+    return Optional.ofNullable(validationBeanMap.get(group));
   }
 
-  public static ValidationBean get(Object bean, Class<?> group) {
+  public static Optional<ValidationBean> get(Object bean, Class<?> group) {
     return get(FieldPath.form(bean.getClass()), bean.getClass(), group);
   }
 
-  private static ValidationBean get(FieldPath fieldPath, Class<?> beanClass, Class<?> group) {
-    ValidationBeanLayout validationBeanLayout = validationBeanLayoutMap.computeIfAbsent(beanClass,
-        clz -> createLayout(fieldPath, clz, group));
+  private static Optional<ValidationBean> get(FieldPath fieldPath, Class<?> beanClass,
+      Class<?> group) {
+    ValidationBeanLayout validationBeanLayout = validationBeanLayoutMap
+        .computeIfAbsent(beanClass, clz -> createLayout(fieldPath, clz));
     return validationBeanLayout.get(group);
   }
 
-  private static ValidationBeanLayout createLayout(FieldPath prefix, Class<?> beanClass,
-      Class<?> group) {
+  private static ValidationBeanLayout createLayout(FieldPath prefix, Class<?> beanClass) {
     Map<Class<?>, ValidationBean> groupMap = new HashMap<>();
     while (!beanClass.equals(Object.class)) {
       Annotation[] classAnnotations = beanClass.getDeclaredAnnotations();
@@ -189,15 +196,18 @@ public class ValidationBeanLayout {
         Annotation[] fieldAnnotations = field.getDeclaredAnnotations();
         FieldPath fieldPath = FieldPath.from(prefix, field, field.getType());
         for (Annotation fieldAnnotation : fieldAnnotations) {
+          List<Class<?>> groups = getGroups(fieldAnnotation, Lists.of(Default.class));
           if (fieldAnnotation instanceof Valid) {
-            List<Class<?>> groups = getGroups(fieldAnnotation, Lists.of(group));
-            groups.forEach(g -> {
-              ValidationBean validationBean = ValidationBeanLayout.get(fieldPath, field.getType(),
-                  group);
-              groupMap.merge(group, validationBean, ValidationBean::add);
-            });
+            Class<?> type = getFieldType(field);
+            groups.forEach(g ->
+                ValidationBeanLayout.get(fieldPath, type, g)
+                    .ifPresent(validationBean -> {
+                      ValidationBean groupValidationBean = groupMap
+                          .computeIfAbsent(g, gg -> ValidationBean.empty());
+                      groupValidationBean.getNeedExtendBeanMap().put(fieldPath, validationBean);
+                    })
+            );
           } else {
-            List<Class<?>> groups = getGroups(fieldAnnotation, Lists.of(Default.class));
             initValidationField(fieldPath, groupMap, fieldAnnotation, groups);
           }
         }
@@ -207,6 +217,14 @@ public class ValidationBeanLayout {
     ValidationBeanLayout value = new ValidationBeanLayout(groupMap);
     validationBeanLayoutMap.put(beanClass, value);
     return value;
+  }
+
+  private static Class<?> getFieldType(Field field) {
+    Class<?> type = field.getType();
+    if (Collection.class.isAssignableFrom(type)) {
+      type = ReflectionUtils.getFirstGenericType(field);
+    }
+    return type;
   }
 
   private static void initValidationField(FieldPath fieldPath,
@@ -252,7 +270,6 @@ public class ValidationBeanLayout {
       validationBean.setConfiguration(value);
     });
   }
-
 
   private static List<Class<?>> getGroups(Annotation annotation, List<Class<?>> defaultValue) {
     Class<?>[] groups = invokeMethod(annotation, "groups", new Class[0]);

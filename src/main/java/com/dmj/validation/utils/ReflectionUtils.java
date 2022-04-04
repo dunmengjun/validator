@@ -4,6 +4,7 @@ import com.dmj.validation.exception.ReflectionException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -13,7 +14,7 @@ public class ReflectionUtils {
     try {
       return invokeMethod(object, name);
     } catch (ReflectionException e) {
-      if (e.getCause() instanceof NoSuchFieldException) {
+      if (e.getCause() instanceof NoSuchMethodException) {
         return defaultValue;
       }
       throw e;
@@ -49,11 +50,8 @@ public class ReflectionUtils {
     }
   }
 
-  public static Class<?> forName(String classPath) {
-    try {
-      return Class.forName(classPath);
-    } catch (ClassNotFoundException e) {
-      throw new ReflectionException(e);
-    }
+  public Class<?> getFirstGenericType(Field field) {
+    ParameterizedType genericType = (ParameterizedType) field.getGenericType();
+    return (Class<?>) genericType.getActualTypeArguments()[0];
   }
 }

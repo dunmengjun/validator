@@ -7,6 +7,7 @@ public class ListBean {
 
   @NotEmpty
   @NotEmpty(groups = OtherGroup.class)
+  @Valid
   private List<InnerBean> innerBeans;
 
   interface OtherGroup {

@@ -8,6 +8,10 @@ import java.util.Map;
 @UtilityClass
 public class Maps {
 
+  public static <K, V> Map<K, V> of() {
+    return new HashMap<>(0);
+  }
+
   public static <K, V> Map<K, V> of(K key, V value) {
     Map<K, V> map = new HashMap<>(1);
     map.put(key, value);
