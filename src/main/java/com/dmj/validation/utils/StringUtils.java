@@ -5,11 +5,11 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class StringUtils {
 
-  public static boolean isBlank(String value) {
-    return value == null || value.trim().equals("");
+  public static boolean isBlank(CharSequence value) {
+    return value == null || value.equals("");
   }
 
-  public static boolean isNotBlank(String value) {
+  public static boolean isNotBlank(CharSequence value) {
     return !isBlank(value);
   }
 

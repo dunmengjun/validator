@@ -61,6 +61,7 @@ public class BeanValidator {
     return FieldValidator.builder()
         .path(fieldValue.getPath())
         .value(fieldValue.getValue())
+        .valueType(fieldValue.getValueType())
         .message(field.getMessage())
         .validators(constraintValidators)
         .build();
@@ -72,6 +73,7 @@ public class BeanValidator {
 
     private String path;
     private Object value;
+    private Class<?> valueType;
   }
 
   private static <T> T createValidator(

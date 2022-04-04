@@ -47,27 +47,28 @@ public class ValidationBeanLayout {
   static class FieldPath {
 
     private List<Field> fields;
+    private Class<?> fieldClass;
 
-    public static FieldPath empty() {
-      return new FieldPath(Lists.of());
+    public static FieldPath form(Class<?> fieldClass) {
+      return new FieldPath(Lists.of(), fieldClass);
     }
 
-    public static FieldPath from(FieldPath prefix, Field field) {
+    public static FieldPath from(FieldPath prefix, Field field, Class<?> fieldClass) {
       List<Field> fields = new ArrayList<>(prefix.fields);
       fields.add(field);
-      return new FieldPath(fields);
+      return new FieldPath(fields, fieldClass);
     }
 
     public FieldValue getFieldValue(Object bean) {
       if (Lists.isEmpty(fields)) {
-        return new FieldValue("", bean);
+        return new FieldValue("", bean, fieldClass);
       }
       List<String> names = new ArrayList<>();
       for (Field field : fields) {
         names.add(field.getName());
         bean = getValue(field, bean);
       }
-      return new FieldValue(String.join(".", names), bean);
+      return new FieldValue(String.join(".", names), bean, fieldClass);
     }
   }
 
@@ -90,8 +91,7 @@ public class ValidationBeanLayout {
         return Optional.empty();
       }
       String message = invokeMethod(annotation, "message", constraint.message());
-      return Optional.of(
-          new ValidationField(fieldPath, message, asList(constraint.validatedBy())));
+      return Optional.of(new ValidationField(fieldPath, message, asList(constraint.validatedBy())));
     }
   }
 
@@ -154,7 +154,7 @@ public class ValidationBeanLayout {
   }
 
   public static ValidationBean get(Object bean, Class<?> group) {
-    return get(FieldPath.empty(), bean.getClass(), group);
+    return get(FieldPath.form(bean.getClass()), bean.getClass(), group);
   }
 
   private static ValidationBean get(FieldPath fieldPath, Class<?> beanClass, Class<?> group) {
@@ -187,7 +187,7 @@ public class ValidationBeanLayout {
       Field[] declaredFields = beanClass.getDeclaredFields();
       for (Field field : declaredFields) {
         Annotation[] fieldAnnotations = field.getDeclaredAnnotations();
-        FieldPath fieldPath = FieldPath.from(prefix, field);
+        FieldPath fieldPath = FieldPath.from(prefix, field, field.getType());
         for (Annotation fieldAnnotation : fieldAnnotations) {
           if (fieldAnnotation instanceof Valid) {
             List<Class<?>> groups = getGroups(fieldAnnotation, Lists.of(group));

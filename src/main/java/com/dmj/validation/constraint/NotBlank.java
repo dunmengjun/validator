@@ -16,6 +16,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import com.dmj.validation.constraint.NotBlank.List;
 import com.dmj.validation.validator.constraint.NotBlankValidator;
+import com.dmj.validation.validator.constraint.NotNullValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -33,7 +34,10 @@ import java.lang.annotation.Target;
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
 @Retention(RUNTIME)
 @Repeatable(List.class)
-@Constraint(validatedBy = NotBlankValidator.class)
+@Constraint(validatedBy = {
+    NotNullValidator.class,
+    NotBlankValidator.class
+})
 public @interface NotBlank {
 
   String message() default "{com.dmj.validation.constraint.NotBlank}";

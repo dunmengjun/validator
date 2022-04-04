@@ -15,6 +15,11 @@ import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import com.dmj.validation.constraint.NotEmpty.List;
+import com.dmj.validation.validator.constraint.ArrayNotEmptyValidator;
+import com.dmj.validation.validator.constraint.ListNotEmptyValidator;
+import com.dmj.validation.validator.constraint.MapNotEmptyValidator;
+import com.dmj.validation.validator.constraint.NotBlankValidator;
+import com.dmj.validation.validator.constraint.NotNullValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -28,27 +33,27 @@ import java.lang.annotation.Target;
  * <li>{@code Map} (map size is evaluated)</li>
  * <li>Array (array length is evaluated)</li>
  * </ul>
- *
- * @author Emmanuel Bernard
- * @author Hardy Ferentschik
- * @since 2.0
  */
 @Documented
-@Constraint(validatedBy = {})
+@Constraint(validatedBy = {
+    NotNullValidator.class,
+    NotBlankValidator.class,
+    ListNotEmptyValidator.class,
+    ArrayNotEmptyValidator.class,
+    MapNotEmptyValidator.class
+})
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
 @Retention(RUNTIME)
 @Repeatable(List.class)
 public @interface NotEmpty {
 
-  String message() default "{javax.validation.constraints.NotEmpty.message}";
+  String message() default "{com.dmj.validation.constraint.NotEmpty}";
 
   Class<?>[] groups() default {};
 
-  /**
-   * Defines several {@code @NotEmpty} constraints on the same element.
-   *
-   * @see NotEmpty
-   */
+  Class<?>[] unions() default {};
+
+
   @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
   @Retention(RUNTIME)
   @Documented

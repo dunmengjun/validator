@@ -19,6 +19,8 @@ public class FieldValidator extends SelfValidator {
   @Getter
   private String message;
 
+  private Class<?> valueType;
+
   @Getter
   private Object value;
 
@@ -26,7 +28,9 @@ public class FieldValidator extends SelfValidator {
 
   @Override
   public boolean doValid() {
-    return validators.stream().allMatch(validator -> validator.valid(value));
+    return validators.stream()
+        .filter(v -> v.type.isAssignableFrom(valueType) || Object.class.equals(v.type))
+        .allMatch(validator -> validator.valid(value));
   }
 
   @Override
