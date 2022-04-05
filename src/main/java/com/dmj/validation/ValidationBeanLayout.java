@@ -174,16 +174,19 @@ public class ValidationBeanLayout {
   }
 
   private static List<Annotation> getAnnotationList(Annotation annotation) {
+    Method[] declaredMethods = annotation.annotationType().getDeclaredMethods();
+    if (declaredMethods.length != 1) {
+      return Lists.of(annotation);
+    }
     Repeatable repeatable = annotation.annotationType().getDeclaredAnnotation(Repeatable.class);
     Constraint declaredAnnotation = annotation.annotationType()
         .getDeclaredAnnotation(Constraint.class);
     if (repeatable != null || declaredAnnotation != null) {
       return Lists.of(annotation);
     }
-    Method[] declaredMethods = annotation.annotationType().getDeclaredMethods();
     boolean flag = ReflectionUtils.hasMethod(annotation.annotationType(), "value",
         Annotation[].class);
-    if (!flag && declaredMethods.length == 1) {
+    if (!flag) {
       return Lists.of(annotation);
     }
     Annotation[] values = invokeMethod(annotation, "value");
