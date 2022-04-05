@@ -5,6 +5,7 @@ import com.dmj.validation.exception.NotValidatorException;
 import com.dmj.validation.utils.Lists;
 import com.dmj.validation.validator.ConstraintValidator;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import lombok.Builder;
@@ -46,12 +47,16 @@ public class FieldValidator extends SelfValidator {
 
     public TypedConstraintValidator(ConstraintValidator<?> validator) {
       ParameterizedType parameterizedType = Arrays.stream(
-              validator.getClass().getGenericInterfaces())
-          .map(t -> (ParameterizedType) t)
-          .filter(t -> t.getRawType().equals(ConstraintValidator.class))
-          .findAny()
+              validator.getClass().getGenericInterfaces()).map(t -> (ParameterizedType) t)
+          .filter(t -> t.getRawType().equals(ConstraintValidator.class)).findAny()
           .orElseThrow(NotValidatorException::new);
-      this.type = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+      Type argument = parameterizedType.getActualTypeArguments()[0];
+      if (argument instanceof ParameterizedType) {
+        ParameterizedType argument1 = (ParameterizedType) argument;
+        this.type = (Class<?>) argument1.getRawType();
+      } else {
+        this.type = (Class<?>) argument;
+      }
       this.validator = validator;
     }
 

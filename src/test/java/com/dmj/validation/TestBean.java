@@ -10,6 +10,7 @@ import lombok.Data;
 
 @Data
 @Configuration(validatedBy = FullMatch.class)
+@Union(unions = InnerBean.class, validatedBy = {})
 @Union(unions = AnyNotEmpty.class, validatedBy = AnyMatch.class)
 public class TestBean {
 

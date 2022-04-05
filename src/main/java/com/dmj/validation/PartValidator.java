@@ -28,4 +28,9 @@ public class PartValidator extends SelfValidator {
     }
     return validatorContext.getResults();
   }
+
+  public PartValidator add(PartValidator partValidator) {
+    this.validatorContext.add(partValidator.validatorContext);
+    return this;
+  }
 }

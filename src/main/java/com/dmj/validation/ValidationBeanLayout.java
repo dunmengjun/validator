@@ -17,7 +17,9 @@ import com.dmj.validation.utils.Maps;
 import com.dmj.validation.utils.ReflectionUtils;
 import com.dmj.validation.validator.ConstraintValidator;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Repeatable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,8 +70,8 @@ public class ValidationBeanLayout {
       List<String> names = new ArrayList<>();
       for (Field field : fields) {
         names.add(field.getName());
-        bean = getValue(field, bean);
       }
+      bean = getValue(fields.get(fields.size() - 1), bean);
       return new FieldValue(String.join(".", names), bean, fieldClass);
     }
 
@@ -166,9 +168,26 @@ public class ValidationBeanLayout {
 
   private static Optional<ValidationBean> get(FieldPath fieldPath, Class<?> beanClass,
       Class<?> group) {
-    ValidationBeanLayout validationBeanLayout = validationBeanLayoutMap
-        .computeIfAbsent(beanClass, clz -> createLayout(fieldPath, clz));
+    ValidationBeanLayout validationBeanLayout = validationBeanLayoutMap.computeIfAbsent(beanClass,
+        clz -> createLayout(fieldPath, clz));
     return validationBeanLayout.get(group);
+  }
+
+  private static List<Annotation> getAnnotationList(Annotation annotation) {
+    Repeatable repeatable = annotation.annotationType().getDeclaredAnnotation(Repeatable.class);
+    Constraint declaredAnnotation = annotation.annotationType()
+        .getDeclaredAnnotation(Constraint.class);
+    if (repeatable != null || declaredAnnotation != null) {
+      return Lists.of(annotation);
+    }
+    Method[] declaredMethods = annotation.annotationType().getDeclaredMethods();
+    boolean flag = ReflectionUtils.hasMethod(annotation.annotationType(), "value",
+        Annotation[].class);
+    if (!flag && declaredMethods.length == 1) {
+      return Lists.of(annotation);
+    }
+    Annotation[] values = invokeMethod(annotation, "value");
+    return Lists.of(values);
   }
 
   private static ValidationBeanLayout createLayout(FieldPath prefix, Class<?> beanClass) {
@@ -176,19 +195,22 @@ public class ValidationBeanLayout {
     while (!beanClass.equals(Object.class)) {
       Annotation[] classAnnotations = beanClass.getDeclaredAnnotations();
       for (Annotation classAnnotation : classAnnotations) {
-        List<Class<?>> groups = getGroups(classAnnotation, Lists.of(Default.class));
-        if (classAnnotation instanceof Configuration) {
-          ConfigurationValue value = ConfigurationValue.from((Configuration) classAnnotation);
-          setConfigurationValue(groupMap, groups, value);
-        } else if (classAnnotation instanceof Union) {
-          Union union = (Union) classAnnotation;
-          List<Integer> unions = mapOrDefault(union.unions(), Objects::hashCode, Lists.of());
-          Asserts.assertNotEmpty(unions, UnionAnnotationException::new);
-          Asserts.assertNotNull(union.message(), UnionAnnotationException::new);
-          ValidationUnion from = ValidationUnion.from(UnionValue.from(union));
-          setUnionValidation(groupMap, groups, unions, from);
-        } else {
-          initValidationField(prefix, groupMap, classAnnotation, groups);
+        List<Annotation> annotationList = getAnnotationList(classAnnotation);
+        for (Annotation annotation : annotationList) {
+          List<Class<?>> groups = getGroups(annotation, Lists.of(Default.class));
+          if (annotation instanceof Configuration) {
+            ConfigurationValue value = ConfigurationValue.from((Configuration) annotation);
+            setConfigurationValue(groupMap, groups, value);
+          } else if (annotation instanceof Union) {
+            Union union = (Union) annotation;
+            List<Integer> unions = mapOrDefault(union.unions(), Objects::hashCode, Lists.of());
+            Asserts.assertNotEmpty(unions, UnionAnnotationException::new);
+            Asserts.assertNotNull(union.message(), UnionAnnotationException::new);
+            ValidationUnion from = ValidationUnion.from(UnionValue.from(union));
+            setUnionValidation(groupMap, groups, unions, from);
+          } else {
+            initValidationField(prefix, groupMap, annotation, groups);
+          }
         }
       }
       Field[] declaredFields = beanClass.getDeclaredFields();
@@ -196,19 +218,20 @@ public class ValidationBeanLayout {
         Annotation[] fieldAnnotations = field.getDeclaredAnnotations();
         FieldPath fieldPath = FieldPath.from(prefix, field, field.getType());
         for (Annotation fieldAnnotation : fieldAnnotations) {
-          List<Class<?>> groups = getGroups(fieldAnnotation, Lists.of(Default.class));
-          if (fieldAnnotation instanceof Valid) {
-            Class<?> type = getFieldType(field);
-            groups.forEach(g ->
-                ValidationBeanLayout.get(fieldPath, type, g)
-                    .ifPresent(validationBean -> {
-                      ValidationBean groupValidationBean = groupMap
-                          .computeIfAbsent(g, gg -> ValidationBean.empty());
-                      groupValidationBean.getNeedExtendBeanMap().put(fieldPath, validationBean);
-                    })
-            );
-          } else {
-            initValidationField(fieldPath, groupMap, fieldAnnotation, groups);
+          List<Annotation> annotationList = getAnnotationList(fieldAnnotation);
+          for (Annotation annotation : annotationList) {
+            List<Class<?>> groups = getGroups(annotation, Lists.of(Default.class));
+            if (annotation instanceof Valid) {
+              Class<?> type = getFieldType(field);
+              groups.forEach(
+                  g -> ValidationBeanLayout.get(fieldPath, type, g).ifPresent(validationBean -> {
+                    ValidationBean groupValidationBean = groupMap.computeIfAbsent(g,
+                        gg -> ValidationBean.empty());
+                    groupValidationBean.getNeedExtendBeanMap().put(fieldPath, validationBean);
+                  }));
+            } else {
+              initValidationField(fieldPath, groupMap, annotation, groups);
+            }
           }
         }
       }

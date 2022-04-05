@@ -52,4 +52,9 @@ public class ValidatorContext {
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
+
+  protected ValidatorContext add(ValidatorContext context) {
+    this.validatorMap.putAll(context.validatorMap);
+    return this;
+  }
 }

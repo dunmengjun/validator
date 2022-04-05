@@ -5,15 +5,19 @@ plugins {
 group 'com.dmj'
 version '1.0-SNAPSHOT'
 
+configurations {
+  compileOnly {
+    extendsFrom annotationProcessor
+  }
+}
+
 repositories {
-  mavenCentral()
+  maven { url 'https://maven.aliyun.com/repository/public' }
 }
 
 def lombokVersion = '1.18.22'
 
 dependencies {
-  // https://mvnrepository.com/artifact/javax.validation/validation-api
-//    implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
   compileOnly "org.projectlombok:lombok:$lombokVersion"
   annotationProcessor "org.projectlombok:lombok:$lombokVersion"
 

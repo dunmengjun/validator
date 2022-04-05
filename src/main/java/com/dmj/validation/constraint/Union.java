@@ -1,21 +1,19 @@
 package com.dmj.validation.constraint;
 
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
-import static java.lang.annotation.ElementType.CONSTRUCTOR;
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE_USE;
+import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import com.dmj.validation.constraint.Union.List;
 import com.dmj.validation.validator.UnionValidator;
 import java.lang.annotation.Documented;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 @Documented
-@Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
+@Target({TYPE})
 @Retention(RUNTIME)
+@Repeatable(List.class)
 public @interface Union {
 
   String message() default "{com.dmj.validation.constraint.Union}";
@@ -25,4 +23,17 @@ public @interface Union {
   Class<? extends UnionValidator>[] validatedBy();
 
   Class<?>[] groups() default {Default.class};
+
+  /**
+   * Defines several {@link Size} annotations on the same element.
+   *
+   * @see Size
+   */
+  @Target({TYPE})
+  @Retention(RUNTIME)
+  @Documented
+  @interface List {
+
+    Union[] value();
+  }
 }

@@ -50,8 +50,20 @@ public class ReflectionUtils {
     }
   }
 
-  public Class<?> getFirstGenericType(Field field) {
+  public static Class<?> getFirstGenericType(Field field) {
     ParameterizedType genericType = (ParameterizedType) field.getGenericType();
     return (Class<?>) genericType.getActualTypeArguments()[0];
+  }
+
+  public static boolean hasMethod(Class<?> targetClass, String name, Class<?> result,
+      Class<?>... args) {
+    Method declaredMethod;
+    try {
+      declaredMethod = targetClass.getDeclaredMethod(name, args);
+    } catch (NoSuchMethodException e) {
+      return false;
+    }
+    Class<?> returnType = declaredMethod.getReturnType();
+    return returnType.equals(result) || result.isAssignableFrom(returnType);
   }
 }
