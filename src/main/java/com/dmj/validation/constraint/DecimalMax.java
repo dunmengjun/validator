@@ -41,7 +41,7 @@ import java.lang.annotation.Target;
 })
 public @interface DecimalMax {
 
-  String message() default "{com.dmj.validation.constraint.DecimalMax}";
+  String message() default "";
 
   Class<?>[] groups() default {};
 

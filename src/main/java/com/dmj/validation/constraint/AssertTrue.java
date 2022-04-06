@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
 })
 public @interface AssertTrue {
 
-  String message() default "{com.dmj.validation.constraint.AssertTrue}";
+  String message() default "";
 
   Class<?>[] groups() default {};
 

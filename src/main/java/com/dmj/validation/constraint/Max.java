@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
 })
 public @interface Max {
 
-  String message() default "{com.dmj.validation.constraint.Max}";
+  String message() default "";
 
   Class<?>[] groups() default {};
 

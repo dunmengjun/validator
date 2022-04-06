@@ -1,17 +1,22 @@
 package com.dmj.validation;
 
+import static com.dmj.validation.utils.ReflectionUtils.invokeMethod;
 import static com.dmj.validation.utils.ReflectionUtils.isAssignableFrom;
 import static com.dmj.validation.utils.ReflectionUtils.isClassEquals;
 
 import com.dmj.validation.ValidationResult.UnionResult;
+import com.dmj.validation.config.GlobalConfig;
 import com.dmj.validation.exception.NotValidatorException;
 import com.dmj.validation.utils.Lists;
+import com.dmj.validation.utils.StringUtils;
 import com.dmj.validation.validator.ConstraintValidator;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -35,6 +40,8 @@ public class FieldValidator extends SelfValidator {
 
   private List<TypedConstraintValidator> validators;
 
+  private static final Pattern pattern = Pattern.compile("\\{(.*?)}");
+
   @Override
   public boolean doValid() {
     if (!isNullValid && value == null) {
@@ -51,7 +58,33 @@ public class FieldValidator extends SelfValidator {
 
   @Override
   protected List<UnionResult> getInnerResults() {
-    return Lists.of(new UnionResult(Lists.of(path), message));
+    String localMessage = message;
+    if (StringUtils.isBlank(localMessage)) {
+      String globalMessage = GlobalConfig.defaultMessageMap.get(annotation.annotationType());
+      if (StringUtils.isNotBlank(globalMessage)) {
+        localMessage = globalMessage;
+      }
+    }
+    return Lists.of(UnionResult.from(path, format(localMessage, annotation)));
+  }
+
+  private String format(String source, Annotation annotation) {
+    if (annotation == null) {
+      return source;
+    }
+    Matcher matcher = pattern.matcher(source);
+    while (matcher.find()) {
+      String key = matcher.group();
+      String keyClone = key.substring(1, key.length() - 1).trim();
+      try {
+        Object value = invokeMethod(annotation, keyClone);
+        if (value != null) {
+          source = source.replace(key, value.toString());
+        }
+      } catch (Exception ignored) {
+      }
+    }
+    return source;
   }
 
   public static class TypedConstraintValidator implements ConstraintValidator<Object, Annotation> {

@@ -31,7 +31,7 @@ public @interface Pattern {
 
   String regexp();
 
-  String message() default "{com.dmj.validation.constraint.Pattern}";
+  String message() default "";
 
   Class<?>[] groups() default {};
 

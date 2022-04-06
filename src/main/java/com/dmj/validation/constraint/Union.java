@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Repeatable(List.class)
 public @interface Union {
 
-  String message() default "{com.dmj.validation.constraint.Union}";
+  String message() default "";
 
   Class<?>[] groups() default {Default.class};
 

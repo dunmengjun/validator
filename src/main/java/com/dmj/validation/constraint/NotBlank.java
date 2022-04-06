@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
     })
 public @interface NotBlank {
 
-  String message() default "{com.dmj.validation.constraint.NotBlank}";
+  String message() default "";
 
   Class<?>[] groups() default {Default.class};
 

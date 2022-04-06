@@ -43,7 +43,7 @@ import java.lang.annotation.Target;
 })
 public @interface Size {
 
-  String message() default "{com.dmj.validation.constraint.Size}";
+  String message() default "";
 
   Class<?>[] groups() default {};
 

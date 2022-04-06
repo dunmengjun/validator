@@ -1,10 +1,11 @@
 package com.dmj.validation;
 
+import com.dmj.validation.ValidationResult.FieldResult;
 import com.dmj.validation.ValidationResult.UnionResult;
 import com.dmj.validation.utils.Lists;
-import com.dmj.validation.utils.StringUtils;
 import com.dmj.validation.validator.UnionValidator;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Builder;
 
 @Builder
@@ -23,10 +24,10 @@ public class PartValidator extends SelfValidator {
 
   @Override
   protected List<UnionResult> getInnerResults() {
-    if (StringUtils.isNotBlank(message)) {
-      return Lists.of(new UnionResult(Lists.of(validatorContext.getFields()), message));
-    }
-    return validatorContext.getResults();
+    List<FieldResult> fieldResults = validatorContext.getResults().stream()
+        .flatMap(unionResult -> unionResult.getFieldResults().stream())
+        .collect(Collectors.toList());
+    return Lists.of(UnionResult.from(fieldResults, message));
   }
 
   public PartValidator add(PartValidator partValidator) {

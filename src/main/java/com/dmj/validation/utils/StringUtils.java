@@ -3,8 +3,10 @@ package com.dmj.validation.utils;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 @UtilityClass
+@Slf4j
 public class StringUtils {
 
   public static boolean isBlank(CharSequence value) {
@@ -24,8 +26,6 @@ public class StringUtils {
   }
 
   public static String join(String join, String... args) {
-    return Stream.of(args)
-        .filter(StringUtils::isNotBlank)
-        .collect(Collectors.joining(join));
+    return Stream.of(args).filter(StringUtils::isNotBlank).collect(Collectors.joining(join));
   }
 }

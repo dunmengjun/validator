@@ -4,8 +4,8 @@ import com.dmj.validation.TestBean.AnyNotEmpty;
 import com.dmj.validation.constraint.NotBlank;
 import com.dmj.validation.constraint.NotNull;
 import com.dmj.validation.constraint.Union;
-import com.dmj.validation.validator.union.FullMatch;
 import com.dmj.validation.validator.union.AnyMatch;
+import com.dmj.validation.validator.union.FullMatch;
 import lombok.Data;
 
 @Data

@@ -1,5 +1,7 @@
 package com.dmj.validation;
 
+import static lombok.AccessLevel.PRIVATE;
+
 import com.dmj.validation.utils.Lists;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -15,17 +17,21 @@ public class ValidationResult {
 
   List<UnionResult> results;
 
-  @AllArgsConstructor
+  @AllArgsConstructor(access = PRIVATE)
   @Getter
   @EqualsAndHashCode
   @ToString
   public static class UnionResult {
 
-    private List<String> paths;
     private String message;
+    private List<FieldResult> fieldResults;
 
     public static UnionResult from(String path, String message) {
-      return new UnionResult(Lists.of(path), message);
+      return new UnionResult(null, Lists.of(FieldResult.from(path, message)));
+    }
+
+    public static UnionResult from(List<FieldResult> fieldResults, String message) {
+      return new UnionResult(message, fieldResults);
     }
   }
 
@@ -35,5 +41,19 @@ public class ValidationResult {
 
   public static ValidationResult error(UnionResult... results) {
     return new ValidationResult(Lists.of(results));
+  }
+
+  @AllArgsConstructor(access = PRIVATE)
+  @Getter
+  @ToString
+  @EqualsAndHashCode
+  public static class FieldResult {
+
+    private String path;
+    private String message;
+
+    public static FieldResult from(String path, String message) {
+      return new FieldResult(path, message);
+    }
   }
 }

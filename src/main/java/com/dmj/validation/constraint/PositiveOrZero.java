@@ -37,7 +37,7 @@ import java.lang.annotation.Target;
 })
 public @interface PositiveOrZero {
 
-  String message() default "{com.dmj.validation.constraint.PositiveOrZero}";
+  String message() default "";
 
   Class<?>[] groups() default {};
 

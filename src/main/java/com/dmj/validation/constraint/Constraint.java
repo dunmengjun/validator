@@ -32,5 +32,5 @@ public @interface Constraint {
 
   Class<?>[] groups() default {};
 
-  String message() default "{com.dmj.validation.constraint.Constraint}";
+  String message() default "";
 }

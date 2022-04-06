@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 @Constraint(isNullValid = false)
 public @interface NotNull {
 
-  String message() default "{com.dmj.validation.constraint.NotNull}";
+  String message() default "";
 
   Class<?>[] groups() default {Default.class};
 

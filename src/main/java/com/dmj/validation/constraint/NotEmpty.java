@@ -41,7 +41,7 @@ import java.lang.annotation.Target;
 @Repeatable(List.class)
 public @interface NotEmpty {
 
-  String message() default "{com.dmj.validation.constraint.NotEmpty}";
+  String message() default "";
 
   Class<?>[] groups() default {};
 

@@ -20,17 +20,13 @@ public abstract class SelfValidator {
   public abstract boolean doValid();
 
   protected List<UnionResult> getResults() {
-    if (isValid()) {
-      return Lists.of();
+    if (status == INVALID) {
+      return getInnerResults();
     }
-    return getInnerResults();
+    return Lists.of();
   }
 
   protected abstract List<UnionResult> getInnerResults();
-
-  public boolean isValid() {
-    return status == VALID;
-  }
 
   protected void setStatus(int status) {
     this.status = status;

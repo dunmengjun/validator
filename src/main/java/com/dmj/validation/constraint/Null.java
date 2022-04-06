@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 @Constraint
 public @interface Null {
 
-  String message() default "{javax.validation.constraints.Null.message}";
+  String message() default "";
 
   Class<?>[] groups() default {};
 

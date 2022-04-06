@@ -38,7 +38,7 @@ import java.lang.annotation.Target;
 })
 public @interface Digits {
 
-  String message() default "{com.dmj.validation.constraint.Digits}";
+  String message() default "";
 
   Class<?>[] groups() default {};
 
