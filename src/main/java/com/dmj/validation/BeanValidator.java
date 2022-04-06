@@ -1,7 +1,6 @@
 package com.dmj.validation;
 
 import com.dmj.validation.FieldValidator.TypedConstraintValidator;
-import com.dmj.validation.ValidationBeanLayout.FieldPath;
 import com.dmj.validation.ValidationBeanLayout.ValidationBean;
 import com.dmj.validation.ValidationBeanLayout.ValidationField;
 import com.dmj.validation.ValidationBeanLayout.ValidationUnion;
@@ -9,7 +8,10 @@ import com.dmj.validation.constraint.Default;
 import com.dmj.validation.exception.ReflectionException;
 import com.dmj.validation.exception.UnknownException;
 import com.dmj.validation.utils.Maps;
+import com.dmj.validation.utils.ReflectionUtils;
+import com.dmj.validation.utils.StringUtils;
 import com.dmj.validation.validator.UnionValidator;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +35,8 @@ public class BeanValidator {
   public static ValidationResult validate(ValidationBean validationBean, Object bean) {
     ConfigurationValue configuration = validationBean.getConfiguration();
     UnionValidator validator = createValidator(configuration.getValidatedBy());
-    Map<String, PartValidator> validatorMap = extendValidatorMap(validationBean, bean);
+    Map<String, PartValidator> validatorMap =
+        extendValidatorMap(validationBean, PathBean.from(bean));
     ValidatorContext context = new ValidatorContext(toSelfValidator(validatorMap));
     validator.valid(context);
     return new ValidationResult(context.getResults());
@@ -44,28 +47,33 @@ public class BeanValidator {
   }
 
   private static Map<String, PartValidator> extendValidatorMap(ValidationBean validationBean,
-      Object bean) {
+      PathBean bean) {
     Map<String, PartValidator> validatorMap = getPartValidatorMap(
         validationBean.getValidationUnionMap(), bean);
-    for (Entry<FieldPath, ValidationBean> entry : validationBean.getNeedExtendBeanMap()
+    for (Entry<Field, ValidationBean> entry : validationBean.getNeedExtendBeanMap()
         .entrySet()) {
-      FieldPath key = entry.getKey();
+      Field field = entry.getKey();
       ValidationBean validationBean1 = entry.getValue();
-      FieldValue fieldValue = key.getFieldValue(bean);
-      Class<?> valueType = fieldValue.getValueType();
-      Object value1 = fieldValue.getValue();
+      Object object = ReflectionUtils.getValue(field, bean.getBean());
+      Class<?> valueType = field.getType();
+      String prefix = StringUtils.join(".", bean.getPath(), field.getName());
       if (Collection.class.isAssignableFrom(valueType)) {
-        if (value1 == null) {
-          Map<String, PartValidator> map = extendValidatorMap(validationBean1, value1);
+        if (object == null) {
+          PathBean from = PathBean.from(String.format("%s[]", prefix), null);
+          Map<String, PartValidator> map = extendValidatorMap(validationBean1, from);
           validatorMap = Maps.merge(validatorMap, map, PartValidator::add);
         } else {
-          Collection<?> value = (Collection<?>) value1;
+          Collection<?> value = (Collection<?>) object;
+          int index = 0;
           for (Object obj : value) {
-            Map<String, PartValidator> map = extendValidatorMap(validationBean1, obj);
+            PathBean from = PathBean.from(String.format("%s[%s]", prefix, index), obj);
+            Map<String, PartValidator> map = extendValidatorMap(validationBean1, from);
             validatorMap = Maps.merge(validatorMap, map, PartValidator::add);
+            index++;
           }
         }
       } else {
+        PathBean value1 = PathBean.from(prefix, object);
         Map<String, PartValidator> map = extendValidatorMap(validationBean1, value1);
         validatorMap = Maps.merge(validatorMap, map, PartValidator::add);
       }
@@ -74,13 +82,13 @@ public class BeanValidator {
   }
 
   private static Map<String, PartValidator> getPartValidatorMap(
-      Map<Integer, ValidationUnion> validationUnionMap, Object bean) {
+      Map<Integer, ValidationUnion> validationUnionMap, PathBean bean) {
     return validationUnionMap.entrySet().stream()
         .collect(Collectors.toMap(entry -> String.valueOf(entry.getKey()),
             entry -> toPartValidator(entry.getValue(), bean)));
   }
 
-  private static PartValidator toPartValidator(ValidationUnion validationUnion, Object bean) {
+  private static PartValidator toPartValidator(ValidationUnion validationUnion, PathBean bean) {
     UnionValue unionValue = validationUnion.getUnionValue();
     List<UnionValidator> validators = unionValue.getValidatedBy().stream()
         .map(BeanValidator::createValidator).collect(Collectors.toList());
@@ -91,26 +99,21 @@ public class BeanValidator {
         .validatorContext(new ValidatorContext(fieldValidatorMap)).build();
   }
 
-  private static FieldValidator toFieldValidator(ValidationField field, Object bean) {
+  private static FieldValidator toFieldValidator(ValidationField field, PathBean bean) {
     List<TypedConstraintValidator> constraintValidators = field.getValidatedBy().stream()
         .map(BeanValidator::createValidator).map(TypedConstraintValidator::new)
         .collect(Collectors.toList());
-    FieldValue fieldValue = field.getFieldPath().getFieldValue(bean);
+    Field field1 = field.getField();
+    Object value = null;
+    if (bean.getBean() != null) {
+      value = ReflectionUtils.getValue(field1, bean.getBean());
+    }
     return FieldValidator.builder()
-        .path(fieldValue.getPath())
-        .value(fieldValue.getValue())
-        .valueType(fieldValue.getValueType())
+        .path(StringUtils.join(".", bean.getPath(), field1.getName()))
+        .value(value)
+        .valueType(field1.getType())
         .message(field.getMessage())
         .validators(constraintValidators).build();
-  }
-
-  @AllArgsConstructor
-  @Getter
-  static class FieldValue {
-
-    private String path;
-    private Object value;
-    private Class<?> valueType;
   }
 
   private static <T> T createValidator(Class<T> validatorClass) {
@@ -121,4 +124,19 @@ public class BeanValidator {
     }
   }
 
+  @AllArgsConstructor
+  @Getter
+  static class PathBean {
+
+    private String path;
+    private Object bean;
+
+    public static PathBean from(Object bean) {
+      return new PathBean("", bean);
+    }
+
+    public static PathBean from(String path, Object bean) {
+      return new PathBean(path, bean);
+    }
+  }
 }

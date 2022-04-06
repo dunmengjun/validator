@@ -1,5 +1,7 @@
 package com.dmj.validation.utils;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -19,5 +21,11 @@ public class StringUtils {
     } else {
       return Character.toLowerCase(s.charAt(0)) + s.substring(1);
     }
+  }
+
+  public static String join(String join, String... args) {
+    return Stream.of(args)
+        .filter(StringUtils::isNotBlank)
+        .collect(Collectors.joining(join));
   }
 }
