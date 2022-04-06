@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
 })
 public @interface Email {
 
-  String message() default "{javax.validation.constraints.Email.message}";
+  String message() default "{com.dmj.validation.constraint.Email}";
 
   Class<?>[] groups() default {};
 

@@ -38,7 +38,7 @@ import java.lang.annotation.Target;
 })
 public @interface Negative {
 
-  String message() default "{javax.validation.constraints.Negative.message}";
+  String message() default "{com.dmj.validation.constraint.Negative}";
 
   Class<?>[] groups() default {};
 

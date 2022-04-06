@@ -9,6 +9,7 @@ import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import com.dmj.validation.constraint.Digits.List;
+import com.dmj.validation.validator.constraint.DigitsCharSequenceValidator;
 import com.dmj.validation.validator.constraint.DigitsValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Repeatable;
@@ -32,11 +33,12 @@ import java.lang.annotation.Target;
 @Repeatable(List.class)
 @Documented
 @Constraint(validatedBy = {
+    DigitsCharSequenceValidator.class,
     DigitsValidator.class
 })
 public @interface Digits {
 
-  String message() default "{javax.validation.constraints.Digits.message}";
+  String message() default "{com.dmj.validation.constraint.Digits}";
 
   Class<?>[] groups() default {};
 

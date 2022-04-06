@@ -1,5 +1,8 @@
 package com.dmj.validation;
 
+import static com.dmj.validation.utils.ReflectionUtils.isAssignableFrom;
+import static com.dmj.validation.utils.ReflectionUtils.isClassEquals;
+
 import com.dmj.validation.ValidationResult.UnionResult;
 import com.dmj.validation.exception.NotValidatorException;
 import com.dmj.validation.utils.Lists;
@@ -38,7 +41,8 @@ public class FieldValidator extends SelfValidator {
       return false;
     }
     return validators.stream()
-        .filter(v -> v.genericValueType.isAssignableFrom(valueType)
+        .filter(v -> isClassEquals(valueType, v.genericValueType)
+            || isAssignableFrom(v.genericValueType, valueType)
             || Object.class.equals(v.genericValueType))
         .filter(v -> v.genericAnnotationType.equals(annotation.annotationType())
             || v.genericAnnotationType.equals(Annotation.class))
@@ -78,9 +82,6 @@ public class FieldValidator extends SelfValidator {
     @SuppressWarnings("unchecked")
     @Override
     public boolean valid(Object value, Annotation annotation) {
-//      if (value != null && !value.getClass().equals(type1)) {
-//        return true;
-//      }
       return validator.valid(value, annotation);
     }
   }

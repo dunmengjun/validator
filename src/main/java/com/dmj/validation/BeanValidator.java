@@ -6,7 +6,6 @@ import com.dmj.validation.ValidationBeanLayout.ValidationField;
 import com.dmj.validation.ValidationBeanLayout.ValidationUnion;
 import com.dmj.validation.constraint.Default;
 import com.dmj.validation.exception.ReflectionException;
-import com.dmj.validation.exception.UnknownException;
 import com.dmj.validation.utils.Maps;
 import com.dmj.validation.utils.ReflectionUtils;
 import com.dmj.validation.utils.StringUtils;
@@ -27,16 +26,16 @@ public class BeanValidator {
   }
 
   public static ValidationResult validate(Object bean, Class<?> group) {
-    ValidationBean validationBean = ValidationBeanLayout.get(bean, group)
-        .orElseThrow(UnknownException::new);
-    return validate(validationBean, bean);
+    return ValidationBeanLayout.get(bean, group)
+        .map(b -> validate(b, bean))
+        .orElse(ValidationResult.ok());
   }
 
   public static ValidationResult validate(ValidationBean validationBean, Object bean) {
     ConfigurationValue configuration = validationBean.getConfiguration();
     UnionValidator validator = createValidator(configuration.getValidatedBy());
-    Map<String, PartValidator> validatorMap =
-        extendValidatorMap(validationBean, PathBean.from(bean));
+    Map<String, PartValidator> validatorMap = extendValidatorMap(validationBean,
+        PathBean.from(bean));
     ValidatorContext context = new ValidatorContext(toSelfValidator(validatorMap));
     validator.valid(context);
     return new ValidationResult(context.getResults());
@@ -50,8 +49,7 @@ public class BeanValidator {
       PathBean bean) {
     Map<String, PartValidator> validatorMap = getPartValidatorMap(
         validationBean.getValidationUnionMap(), bean);
-    for (Entry<Field, ValidationBean> entry : validationBean.getNeedExtendBeanMap()
-        .entrySet()) {
+    for (Entry<Field, ValidationBean> entry : validationBean.getNeedExtendBeanMap().entrySet()) {
       Field field = entry.getKey();
       ValidationBean validationBean1 = entry.getValue();
       Object object = ReflectionUtils.getValue(field, bean.getBean());
@@ -83,8 +81,8 @@ public class BeanValidator {
 
   private static Map<String, PartValidator> getPartValidatorMap(
       Map<Integer, ValidationUnion> validationUnionMap, PathBean bean) {
-    return validationUnionMap.entrySet().stream()
-        .collect(Collectors.toMap(entry -> String.valueOf(entry.getKey()),
+    return validationUnionMap.entrySet().stream().collect(
+        Collectors.toMap(entry -> String.valueOf(entry.getKey()),
             entry -> toPartValidator(entry.getValue(), bean)));
   }
 
@@ -108,13 +106,9 @@ public class BeanValidator {
     if (bean.getBean() != null) {
       value = ReflectionUtils.getValue(field1, bean.getBean());
     }
-    return FieldValidator.builder()
-        .path(StringUtils.join(".", bean.getPath(), field1.getName()))
-        .value(value)
-        .valueType(field1.getType())
-        .message(field.getMessage())
-        .annotation(field.getAnnotation())
-        .isNullValid(field.isNullValid())
+    return FieldValidator.builder().path(StringUtils.join(".", bean.getPath(), field1.getName()))
+        .value(value).valueType(field1.getType()).message(field.getMessage())
+        .annotation(field.getAnnotation()).isNullValid(field.isNullValid())
         .validators(constraintValidators).build();
   }
 

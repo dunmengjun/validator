@@ -43,7 +43,7 @@ import java.lang.annotation.Target;
 })
 public @interface NegativeOrZero {
 
-  String message() default "{javax.validation.constraints.NegativeOrZero.message}";
+  String message() default "{com.dmj.validation.constraint.NegativeOrZero}";
 
   Class<?>[] groups() default {};
 

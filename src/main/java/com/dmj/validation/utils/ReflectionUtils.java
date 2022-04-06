@@ -66,4 +66,32 @@ public class ReflectionUtils {
     Class<?> returnType = declaredMethod.getReturnType();
     return returnType.equals(result) || result.isAssignableFrom(returnType);
   }
+
+  public static boolean isClassEquals(Class<?> left, Class<?> right) {
+    left = wrapClass(left);
+    right = wrapClass(right);
+    return left.equals(right);
+  }
+
+  public static boolean isAssignableFrom(Class<?> supperClass, Class<?> valueType) {
+    if (int.class.equals(valueType)
+        || float.class.equals(valueType)
+        || double.class.equals(valueType)
+        || byte.class.equals(valueType)
+        || short.class.equals(valueType)
+        || long.class.equals(valueType)) {
+      if (Number.class.equals(supperClass)) {
+        return true;
+      }
+    }
+    return supperClass.isAssignableFrom(valueType);
+  }
+
+  private static Class<?> wrapClass(Class<?> cls) {
+    try {
+      return ((Class<?>) cls.getField("TYPE").get(null));
+    } catch (Exception e) {
+      return cls;
+    }
+  }
 }

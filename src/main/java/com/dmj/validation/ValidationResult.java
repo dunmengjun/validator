@@ -1,5 +1,6 @@
 package com.dmj.validation;
 
+import com.dmj.validation.utils.Lists;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -22,5 +23,17 @@ public class ValidationResult {
 
     private List<String> paths;
     private String message;
+
+    public static UnionResult from(String path, String message) {
+      return new UnionResult(Lists.of(path), message);
+    }
+  }
+
+  public static ValidationResult ok() {
+    return new ValidationResult(Lists.of());
+  }
+
+  public static ValidationResult error(UnionResult... results) {
+    return new ValidationResult(Lists.of(results));
   }
 }

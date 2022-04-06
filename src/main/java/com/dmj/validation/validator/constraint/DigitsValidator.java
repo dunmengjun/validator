@@ -7,6 +7,6 @@ public class DigitsValidator implements ConstraintValidator<Object, Digits> {
 
   @Override
   public boolean valid(Object value, Digits annotation) {
-    return false;
+    return new DigitsCharSequenceValidator().valid(String.valueOf(value), annotation);
   }
 }

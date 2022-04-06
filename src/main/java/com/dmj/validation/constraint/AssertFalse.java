@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = {AssertFalseValidator.class})
 public @interface AssertFalse {
 
-  String message() default "{javax.validation.constraints.AssertFalse.message}";
+  String message() default "{com.dmj.validation.constraint.AssertFalse}";
 
   Class<?>[] groups() default {};
 

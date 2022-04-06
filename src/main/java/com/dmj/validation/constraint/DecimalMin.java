@@ -41,7 +41,7 @@ import java.lang.annotation.Target;
 })
 public @interface DecimalMin {
 
-  String message() default "{javax.validation.constraints.DecimalMin.message}";
+  String message() default "{com.dmj.validation.constraint.DecimalMin}";
 
   Class<?>[] groups() default {};
 
