@@ -1,9 +1,3 @@
-/*
- * Bean Validation API
- *
- * License: Apache License, Version 2.0
- * See the license.txt file in the root directory or <http://www.apache.org/licenses/LICENSE-2.0>.
- */
 package com.dmj.validation.constraint;
 
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
@@ -15,6 +9,10 @@ import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import com.dmj.validation.constraint.Size.List;
+import com.dmj.validation.validator.constraint.ArraySizeValidator;
+import com.dmj.validation.validator.constraint.CharSequenceSizeValidator;
+import com.dmj.validation.validator.constraint.CollectionSizeValidator;
+import com.dmj.validation.validator.constraint.MapSizeValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -32,19 +30,24 @@ import java.lang.annotation.Target;
  * </ul>
  * <p>
  * {@code null} elements are considered valid.
- *
- * @author Emmanuel Bernard
  */
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
 @Retention(RUNTIME)
 @Repeatable(List.class)
 @Documented
-@Constraint(validatedBy = {})
+@Constraint(validatedBy = {
+    CharSequenceSizeValidator.class,
+    CollectionSizeValidator.class,
+    MapSizeValidator.class,
+    ArraySizeValidator.class
+})
 public @interface Size {
 
   String message() default "{javax.validation.constraints.Size.message}";
 
   Class<?>[] groups() default {};
+
+  Class<?>[] unions() default {};
 
   /**
    * @return size the element must be higher or equal to

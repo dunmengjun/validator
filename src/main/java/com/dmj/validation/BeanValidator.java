@@ -113,6 +113,8 @@ public class BeanValidator {
         .value(value)
         .valueType(field1.getType())
         .message(field.getMessage())
+        .annotation(field.getAnnotation())
+        .isNullValid(field.isNullValid())
         .validators(constraintValidators).build();
   }
 

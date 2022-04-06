@@ -15,6 +15,7 @@ import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import com.dmj.validation.constraint.NegativeOrZero.List;
+import com.dmj.validation.validator.constraint.NegativeOrZeroValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -32,20 +33,21 @@ import java.lang.annotation.Target;
  * </ul>
  * <p>
  * {@code null} elements are considered valid.
- *
- * @author Gunnar Morling
- * @since 2.0
  */
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
 @Retention(RUNTIME)
 @Repeatable(List.class)
 @Documented
-@Constraint(validatedBy = {})
+@Constraint(validatedBy = {
+    NegativeOrZeroValidator.class
+})
 public @interface NegativeOrZero {
 
   String message() default "{javax.validation.constraints.NegativeOrZero.message}";
 
   Class<?>[] groups() default {};
+
+  Class<?>[] unions() default {};
 
   /**
    * Defines several {@link NegativeOrZero} constraints on the same element.

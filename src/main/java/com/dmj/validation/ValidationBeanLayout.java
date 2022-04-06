@@ -46,12 +46,15 @@ public class ValidationBeanLayout {
   @Getter
   static class ValidationField {
 
+    private Annotation annotation;
+    private boolean isNullValid;
     private Field field;
     private String message;
-    private List<Class<? extends ConstraintValidator<?>>> validatedBy;
+    private List<Class<? extends ConstraintValidator<?, ?>>> validatedBy;
 
     public static ValidationField fromConstraint(Field field, Constraint constraint) {
-      return new ValidationField(field, constraint.message(), asList(constraint.validatedBy()));
+      return new ValidationField(constraint, constraint.isNullValid(),
+          field, constraint.message(), asList(constraint.validatedBy()));
     }
 
     public static Optional<ValidationField> fromAnnotation(Field field,
@@ -61,7 +64,8 @@ public class ValidationBeanLayout {
         return Optional.empty();
       }
       String message = invokeMethod(annotation, "message", constraint.message());
-      return Optional.of(new ValidationField(field, message, asList(constraint.validatedBy())));
+      return Optional.of(new ValidationField(annotation, constraint.isNullValid(),
+          field, message, asList(constraint.validatedBy())));
     }
   }
 
@@ -214,19 +218,19 @@ public class ValidationBeanLayout {
   }
 
   private static void initValidationField(Field field, Map<Class<?>, ValidationBean> groupMap,
-      Annotation classAnnotation, List<Class<?>> groups) {
-    if (classAnnotation instanceof Constraint) {
-      Constraint constraint = (Constraint) classAnnotation;
+      Annotation annotation, List<Class<?>> groups) {
+    if (annotation instanceof Constraint) {
+      Constraint constraint = (Constraint) annotation;
       List<Integer> unions = mapOrDefault(constraint.unions(), Objects::hashCode,
           Lists.of(unionInteger.incrementAndGet()));
       ValidationField validationField = ValidationField.fromConstraint(field, constraint);
       ValidationUnion from = ValidationUnion.from(validationField);
       setUnionValidation(groupMap, groups, unions, from);
     } else {
-      Class<?>[] unionsClasses = invokeMethod(classAnnotation, "unions", new Class<?>[]{});
+      Class<?>[] unionsClasses = invokeMethod(annotation, "unions", new Class<?>[]{});
       List<Integer> unions = mapOrDefault(unionsClasses, Objects::hashCode,
           Lists.of(unionInteger.incrementAndGet()));
-      ValidationField.fromAnnotation(field, classAnnotation).ifPresent(validationField -> {
+      ValidationField.fromAnnotation(field, annotation).ifPresent(validationField -> {
         ValidationUnion from = ValidationUnion.from(validationField);
         setUnionValidation(groupMap, groups, unions, from);
       });

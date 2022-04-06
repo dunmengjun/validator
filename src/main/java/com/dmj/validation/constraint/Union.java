@@ -18,11 +18,12 @@ public @interface Union {
 
   String message() default "{com.dmj.validation.constraint.Union}";
 
+  Class<?>[] groups() default {Default.class};
+
   Class<?>[] unions() default {};
 
   Class<? extends UnionValidator>[] validatedBy();
 
-  Class<?>[] groups() default {Default.class};
 
   /**
    * Defines several {@link Size} annotations on the same element.

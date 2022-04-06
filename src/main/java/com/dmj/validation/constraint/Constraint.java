@@ -24,7 +24,9 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface Constraint {
 
-  Class<? extends ConstraintValidator<?>>[] validatedBy() default {};
+  Class<? extends ConstraintValidator<?, ?>>[] validatedBy() default {};
+
+  boolean isNullValid() default true;
 
   Class<?>[] unions() default {};
 

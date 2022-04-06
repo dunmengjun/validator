@@ -1,9 +1,3 @@
-/*
- * Bean Validation API
- *
- * License: Apache License, Version 2.0
- * See the license.txt file in the root directory or <http://www.apache.org/licenses/LICENSE-2.0>.
- */
 package com.dmj.validation.constraint;
 
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
@@ -29,12 +23,14 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Repeatable(List.class)
 @Documented
-@Constraint(validatedBy = {})
+@Constraint
 public @interface Null {
 
   String message() default "{javax.validation.constraints.Null.message}";
 
   Class<?>[] groups() default {};
+
+  Class<?>[] unions() default {};
 
   /**
    * Defines several {@link Null} annotations on the same element.

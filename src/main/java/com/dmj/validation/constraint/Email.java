@@ -15,41 +15,29 @@ import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import com.dmj.validation.constraint.Email.List;
+import com.dmj.validation.validator.constraint.EmailValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * The string has to be a well-formed email address. Exact semantics of what makes up a valid email
- * address are left to Bean Validation providers. Accepts {@code CharSequence}.
- *
- * @author Emmanuel Bernard
- * @author Hardy Ferentschik
- * @since 2.0
+ * The string has to be a well-formed email address. RFC5322. Accepts {@code CharSequence}.
  */
 @Documented
-@Constraint(validatedBy = {})
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
 @Retention(RUNTIME)
 @Repeatable(List.class)
+@Constraint(validatedBy = {
+    EmailValidator.class
+})
 public @interface Email {
 
   String message() default "{javax.validation.constraints.Email.message}";
 
   Class<?>[] groups() default {};
 
-  /**
-   * @return an additional regular expression the annotated element must match. The default is any
-   * string ('.*')
-   */
-  String regexp() default ".*";
-
-  /**
-   * @return used in combination with {@link #regexp()} in order to specify a regular expression
-   * option
-   */
-  Pattern.Flag[] flags() default {};
+  Class<?>[] unions() default {};
 
   /**
    * Defines several {@code @Email} constraints on the same element.

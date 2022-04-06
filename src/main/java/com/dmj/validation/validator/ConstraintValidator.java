@@ -1,7 +1,9 @@
 package com.dmj.validation.validator;
 
-@FunctionalInterface
-public interface ConstraintValidator<T> {
+import java.lang.annotation.Annotation;
 
-  boolean valid(T value);
+@FunctionalInterface
+public interface ConstraintValidator<T, R extends Annotation> {
+
+  boolean valid(T value, R annotation);
 }
