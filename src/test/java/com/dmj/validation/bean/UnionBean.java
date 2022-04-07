@@ -9,7 +9,6 @@ import com.dmj.validation.constraint.NotNull;
 import com.dmj.validation.constraint.Pattern;
 import com.dmj.validation.constraint.Size;
 import com.dmj.validation.constraint.Union;
-import com.dmj.validation.validator.union.AllMatch;
 import com.dmj.validation.validator.union.AnyMatch;
 import com.dmj.validation.validator.union.FullMatch;
 import lombok.Data;
@@ -21,7 +20,7 @@ import lombok.Data;
     validatedBy = AnyMatch.class,
     message = "Can't all be empty"
 )
-@Union(unions = AllNotEmpty.class, validatedBy = AllMatch.class)
+@Union(unions = AllNotEmpty.class)
 public class UnionBean {
 
   @NotNull(unions = {

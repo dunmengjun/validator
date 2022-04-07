@@ -6,6 +6,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import com.dmj.validation.constraint.Union.List;
 import com.dmj.validation.validator.UnionValidator;
+import com.dmj.validation.validator.union.AllMatch;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -23,7 +24,7 @@ public @interface Union {
 
   Class<?>[] unions() default {};
 
-  Class<? extends UnionValidator>[] validatedBy();
+  Class<? extends UnionValidator>[] validatedBy() default AllMatch.class;
 
 
   /**

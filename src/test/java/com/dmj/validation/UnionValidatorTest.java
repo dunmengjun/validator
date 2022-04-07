@@ -2,6 +2,7 @@ package com.dmj.validation;
 
 import static com.dmj.validation.config.GlobalConfig.getMessage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.dmj.validation.ValidationResult.FieldResult;
 import com.dmj.validation.ValidationResult.UnionResult;
@@ -13,6 +14,7 @@ import com.dmj.validation.constraint.Pattern;
 import com.dmj.validation.constraint.Size;
 import com.dmj.validation.utils.Lists;
 import com.dmj.validation.validator.union.AnyMatch;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class UnionValidatorTest {
@@ -51,7 +53,7 @@ public class UnionValidatorTest {
 
     ValidationResult actual = BeanValidator.validate(unionBean);
 
-    ValidationResult expected = ValidationResult.error(
+    List<UnionResult> expected = Lists.of(
         UnionResult.from(
             "Can't all be empty",
             Lists.of(
@@ -62,7 +64,7 @@ public class UnionValidatorTest {
         ),
         UnionResult.from("age", getMessage(NotNull.class))
     );
-    assertEquals(expected, actual);
+    assertTrue(Lists.isEqualCollection(expected, actual.getResults()));
   }
 
   @Test

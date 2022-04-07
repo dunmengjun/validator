@@ -8,9 +8,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Builder;
+import lombok.Getter;
 
 @Builder
 public class PartValidator extends SelfValidator {
+
+  @Getter
+  private boolean isActive;
 
   private String message;
 
@@ -42,6 +46,9 @@ public class PartValidator extends SelfValidator {
   }
 
   public PartValidator add(PartValidator partValidator) {
+    if (!this.isActive) {
+      this.isActive = partValidator.isActive;
+    }
     this.selfValidators.addAll(partValidator.selfValidators);
     return this;
   }
