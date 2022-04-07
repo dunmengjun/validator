@@ -2,6 +2,8 @@ package com.dmj.validation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.dmj.validation.bean.InnerBean;
+import com.dmj.validation.bean.TestBean;
 import org.junit.jupiter.api.Test;
 
 public class BeanValidatorTest {
@@ -28,12 +30,5 @@ public class BeanValidatorTest {
     ValidationResult actual = BeanValidator.validate(bean);
 
     assertEquals(0, actual.getResults().size());
-  }
-
-  @Test
-  void test() {
-    ListBean listBean = new ListBean();
-    ValidationResult validate = BeanValidator.validate(listBean);
-    System.out.println(validate);
   }
 }

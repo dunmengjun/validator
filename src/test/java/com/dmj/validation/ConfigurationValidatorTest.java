@@ -8,7 +8,7 @@ import com.dmj.validation.validator.union.AnyMatch;
 import com.dmj.validation.validator.union.FullMatch;
 import org.junit.jupiter.api.Test;
 
-public class ConfigurationTest {
+public class ConfigurationValidatorTest {
 
   @Test
   void should_return_ok_when_validate_given_default_group() {

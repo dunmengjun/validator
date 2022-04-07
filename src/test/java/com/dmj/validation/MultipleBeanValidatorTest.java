@@ -10,7 +10,7 @@ import com.dmj.validation.constraint.Size;
 import com.dmj.validation.validator.union.AnyMatch;
 import org.junit.jupiter.api.Test;
 
-public class MultipleBeanTest {
+public class MultipleBeanValidatorTest {
 
   @Test
   void should_return_ok_when_validate_given_default_group() {

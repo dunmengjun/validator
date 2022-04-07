@@ -1,5 +1,6 @@
-package com.dmj.validation;
+package com.dmj.validation.bean;
 
+import com.dmj.validation.Valid;
 import com.dmj.validation.constraint.NotEmpty;
 import java.util.List;
 

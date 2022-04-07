@@ -1,6 +1,8 @@
-package com.dmj.validation;
+package com.dmj.validation.bean;
 
-import com.dmj.validation.TestBean.AnyNotEmpty;
+import com.dmj.validation.Configuration;
+import com.dmj.validation.Valid;
+import com.dmj.validation.bean.TestBean.AnyNotEmpty;
 import com.dmj.validation.constraint.NotBlank;
 import com.dmj.validation.constraint.NotNull;
 import com.dmj.validation.constraint.Union;

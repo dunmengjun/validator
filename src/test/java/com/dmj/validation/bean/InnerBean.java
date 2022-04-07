@@ -1,6 +1,6 @@
-package com.dmj.validation;
+package com.dmj.validation.bean;
 
-import com.dmj.validation.TestBean.AnyNotEmpty;
+import com.dmj.validation.bean.TestBean.AnyNotEmpty;
 import com.dmj.validation.constraint.NotBlank;
 
 public class InnerBean {
