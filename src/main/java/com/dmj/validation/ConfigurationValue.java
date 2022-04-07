@@ -1,7 +1,7 @@
 package com.dmj.validation;
 
 import com.dmj.validation.validator.UnionValidator;
-import com.dmj.validation.validator.union.AnyMatch;
+import com.dmj.validation.validator.union.AllMatch;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,6 +20,6 @@ public class ConfigurationValue {
   }
 
   public static ConfigurationValue defaultValue() {
-    return new ConfigurationValue(AnyMatch.class);
+    return new ConfigurationValue(AllMatch.class);
   }
 }

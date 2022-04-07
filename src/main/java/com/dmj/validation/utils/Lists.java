@@ -1,11 +1,14 @@
 package com.dmj.validation.utils;
 
-import java.util.Set;
-import lombok.experimental.UtilityClass;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class Lists {
@@ -25,11 +28,38 @@ public class Lists {
     return new ArrayList<>(set);
   }
 
-  public static <T> boolean isEmpty(List<T> list) {
-    return list == null || list.isEmpty();
+  public static <T> boolean isEqualCollection(final Collection<T> a, final Collection<T> b) {
+    if (a.size() != b.size()) {
+      return false;
+    } else {
+      Map<T, Integer> mapA = getCardinalityMap(a);
+      Map<T, Integer> mapB = getCardinalityMap(b);
+      if (mapA.size() != mapB.size()) {
+        return false;
+      } else {
+        for (T obj : mapA.keySet()) {
+          if (getFreq(obj, mapA) != getFreq(obj, mapB)) {
+            return false;
+          }
+        }
+        return true;
+      }
+    }
   }
 
-  public static <T> boolean isNotEmpty(List<T> list) {
-    return list != null && !list.isEmpty();
+  public static <O> Map<O, Integer> getCardinalityMap(final Iterable<? extends O> coll) {
+    final Map<O, Integer> count = new HashMap<>();
+    for (final O obj : coll) {
+      count.merge(obj, 1, Integer::sum);
+    }
+    return count;
+  }
+
+  private int getFreq(final Object obj, final Map<?, Integer> freqMap) {
+    final Integer count = freqMap.get(obj);
+    if (count != null) {
+      return count;
+    }
+    return 0;
   }
 }

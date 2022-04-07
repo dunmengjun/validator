@@ -37,8 +37,10 @@ public class BeanValidator {
     Map<String, PartValidator> validatorMap = extendValidatorMap(validationBean,
         PathBean.from(bean));
     ValidatorContext context = new ValidatorContext(toSelfValidator(validatorMap));
-    validator.valid(context);
-    return new ValidationResult(context.getResults());
+    if (validator.valid(context)) {
+      return ValidationResult.ok();
+    }
+    return ValidationResult.error(context.getResults());
   }
 
   private static Map<String, SelfValidator> toSelfValidator(Map<String, PartValidator> map) {

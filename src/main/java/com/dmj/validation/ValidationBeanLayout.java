@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,7 +36,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ValidationBeanLayout {
 
-  private static final Map<Class<?>, ValidationBeanLayout> validationBeanLayoutMap = new ConcurrentHashMap<>();
+  private static final Map<Class<?>, ValidationBeanLayout> validationBeanLayoutMap = new HashMap<>();
   private static final AtomicInteger unionInteger = new AtomicInteger(0);
 
   private Map<Class<?>, ValidationBean> validationBeanMap;
@@ -160,6 +159,7 @@ public class ValidationBeanLayout {
 
   private static ValidationBeanLayout createLayout(Class<?> beanClass) {
     Map<Class<?>, ValidationBean> groupMap = new HashMap<>();
+    Class<?> originBeanClass = beanClass;
     while (!beanClass.equals(Object.class)) {
       Annotation[] classAnnotations = beanClass.getDeclaredAnnotations();
       for (Annotation classAnnotation : classAnnotations) {
@@ -205,7 +205,7 @@ public class ValidationBeanLayout {
       beanClass = beanClass.getSuperclass();
     }
     ValidationBeanLayout value = new ValidationBeanLayout(groupMap);
-    validationBeanLayoutMap.put(beanClass, value);
+    validationBeanLayoutMap.put(originBeanClass, value);
     return value;
   }
 

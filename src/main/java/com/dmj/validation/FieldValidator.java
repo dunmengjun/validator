@@ -44,6 +44,9 @@ public class FieldValidator extends SelfValidator {
 
   @Override
   public boolean doValid() {
+    if (isNullValid && value == null) {
+      return true;
+    }
     if (!isNullValid && value == null) {
       return false;
     }

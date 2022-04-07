@@ -40,7 +40,11 @@ public class ValidationResult {
   }
 
   public static ValidationResult error(UnionResult... results) {
-    return new ValidationResult(Lists.of(results));
+    return error(Lists.of(results));
+  }
+
+  public static ValidationResult error(List<UnionResult> unionResults) {
+    return new ValidationResult(unionResults);
   }
 
   @AllArgsConstructor(access = PRIVATE)

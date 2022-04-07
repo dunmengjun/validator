@@ -32,7 +32,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class SingleValidatorTest {
 
   @Test
-  public void should_return_ok_when_validate_single_bean_given_and_no_group_present() {
+  void should_return_ok_when_validate_single_bean_given_and_no_group_present() {
     SingleBean bean = new SingleBean();
 
     ValidationResult actual = BeanValidator.validate(bean);
@@ -42,7 +42,7 @@ public class SingleValidatorTest {
 
   @ParameterizedTest
   @MethodSource("okGenerator")
-  public void should_return_ok_when_validate_single_bean_given(SingleBean singleBean,
+  void should_return_ok_when_validate_single_bean_given(SingleBean singleBean,
       Class<?> group) {
     ValidationResult actual = BeanValidator.validate(singleBean, group);
 
@@ -51,7 +51,7 @@ public class SingleValidatorTest {
 
   @ParameterizedTest
   @MethodSource("errorGenerator")
-  public void should_return_error_when_validate_single_bean_given(SingleBean singleBean,
+  void should_return_error_when_validate_single_bean_given(SingleBean singleBean,
       Class<?> group, String path, String message) {
     ValidationResult actual = BeanValidator.validate(singleBean, group);
 

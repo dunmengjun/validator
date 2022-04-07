@@ -10,7 +10,16 @@ import lombok.extern.slf4j.Slf4j;
 public class StringUtils {
 
   public static boolean isBlank(CharSequence value) {
-    return value == null || value.equals("");
+    int strLen;
+    if (value == null || (strLen = value.length()) == 0) {
+      return true;
+    }
+    for (int i = 0; i < strLen; i++) {
+      if ((!Character.isWhitespace(value.charAt(i)))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public static boolean isNotBlank(CharSequence value) {
