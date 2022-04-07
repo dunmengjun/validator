@@ -42,7 +42,7 @@ public @interface NotBlank {
 
   String message() default "";
 
-  Class<?>[] groups() default {Default.class};
+  Class<?>[] groups() default Default.class;
 
   Class<?>[] unions() default {};
 

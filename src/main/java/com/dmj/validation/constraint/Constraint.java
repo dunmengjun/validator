@@ -30,7 +30,7 @@ public @interface Constraint {
 
   Class<?>[] unions() default {};
 
-  Class<?>[] groups() default {};
+  Class<?>[] groups() default Default.class;
 
   String message() default "";
 }

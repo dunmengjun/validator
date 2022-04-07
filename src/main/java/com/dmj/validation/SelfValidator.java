@@ -31,4 +31,6 @@ public abstract class SelfValidator {
   protected void setStatus(int status) {
     this.status = status;
   }
+
+  protected abstract String getPath();
 }

@@ -12,8 +12,7 @@ public class BeanValidatorTest {
 
     ValidationResult actual = BeanValidator.validate(bean);
 
-    System.out.println(actual);
-    assertEquals(5, actual.getResults().size());
+    assertEquals(4, actual.getResults().size());
   }
 
   @Test
@@ -28,7 +27,6 @@ public class BeanValidatorTest {
 
     ValidationResult actual = BeanValidator.validate(bean);
 
-    System.out.println(actual);
     assertEquals(0, actual.getResults().size());
   }
 

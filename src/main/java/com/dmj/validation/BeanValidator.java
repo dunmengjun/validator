@@ -4,6 +4,7 @@ import com.dmj.validation.FieldValidator.TypedConstraintValidator;
 import com.dmj.validation.ValidationBeanLayout.ValidationBean;
 import com.dmj.validation.ValidationBeanLayout.ValidationField;
 import com.dmj.validation.ValidationBeanLayout.ValidationUnion;
+import com.dmj.validation.ValidationResult.UnionResult;
 import com.dmj.validation.constraint.Default;
 import com.dmj.validation.exception.ReflectionException;
 import com.dmj.validation.utils.Maps;
@@ -36,15 +37,20 @@ public class BeanValidator {
     UnionValidator validator = createValidator(configuration.getValidatedBy());
     Map<String, PartValidator> validatorMap = extendValidatorMap(validationBean,
         PathBean.from(bean));
-    ValidatorContext context = new ValidatorContext(toSelfValidator(validatorMap));
-    if (validator.valid(context)) {
+    List<SelfValidator> selfValidators = toSelfValidator(validatorMap);
+    if (validator.valid(new ValidatorContext(selfValidators))) {
       return ValidationResult.ok();
     }
-    return ValidationResult.error(context.getResults());
+    List<UnionResult> unionResults = selfValidators.stream()
+        .flatMap(selfValidator -> selfValidator.getResults().stream())
+        .collect(Collectors.toList());
+    return ValidationResult.error(unionResults);
   }
 
-  private static Map<String, SelfValidator> toSelfValidator(Map<String, PartValidator> map) {
-    return map.entrySet().stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+  private static List<SelfValidator> toSelfValidator(Map<String, PartValidator> map) {
+    return map.values().stream()
+        .map(validator -> (SelfValidator) validator)
+        .collect(Collectors.toList());
   }
 
   private static Map<String, PartValidator> extendValidatorMap(ValidationBean validationBean,
@@ -91,12 +97,17 @@ public class BeanValidator {
   private static PartValidator toPartValidator(ValidationUnion validationUnion, PathBean bean) {
     UnionValue unionValue = validationUnion.getUnionValue();
     List<UnionValidator> validators = unionValue.getValidatedBy().stream()
-        .map(BeanValidator::createValidator).collect(Collectors.toList());
-    Map<String, SelfValidator> fieldValidatorMap = validationUnion.getFieldMap().values().stream()
+        .map(BeanValidator::createValidator)
+        .collect(Collectors.toList());
+    List<SelfValidator> selfValidators = validationUnion.getFields().stream()
         .map(validationField -> toFieldValidator(validationField, bean))
-        .collect(Collectors.toMap(FieldValidator::getPath, v -> v));
-    return PartValidator.builder().message(unionValue.getMessage()).validators(validators)
-        .validatorContext(new ValidatorContext(fieldValidatorMap)).build();
+        .map(fieldValidator -> (SelfValidator) fieldValidator)
+        .collect(Collectors.toList());
+    return PartValidator.builder()
+        .message(unionValue.getMessage())
+        .validators(validators)
+        .selfValidators(selfValidators)
+        .build();
   }
 
   private static FieldValidator toFieldValidator(ValidationField field, PathBean bean) {

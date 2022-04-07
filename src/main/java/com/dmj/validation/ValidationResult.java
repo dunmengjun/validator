@@ -33,6 +33,10 @@ public class ValidationResult {
     public static UnionResult from(List<FieldResult> fieldResults, String message) {
       return new UnionResult(message, fieldResults);
     }
+
+    public static UnionResult from(FieldResult... fieldResults) {
+      return new UnionResult(null, Lists.of(fieldResults));
+    }
   }
 
   public static ValidationResult ok() {

@@ -28,7 +28,7 @@ public @interface NotNull {
 
   String message() default "";
 
-  Class<?>[] groups() default {Default.class};
+  Class<?>[] groups() default Default.class;
 
   Class<?>[] unions() default {};
 

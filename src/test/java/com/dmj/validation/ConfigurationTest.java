@@ -1,11 +1,9 @@
 package com.dmj.validation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.dmj.validation.ValidationResult.UnionResult;
 import com.dmj.validation.bean.ConfigurationBean;
-import com.dmj.validation.utils.Lists;
 import com.dmj.validation.validator.union.AnyMatch;
 import com.dmj.validation.validator.union.FullMatch;
 import org.junit.jupiter.api.Test;
@@ -90,7 +88,7 @@ public class ConfigurationTest {
         UnionResult.from("name", "It must not be null"),
         UnionResult.from("number", "It must be higher or equal to the minimum 10")
     );
-    assertTrue(Lists.isEqualCollection(expected.getResults(), actual.getResults()));
+    assertEquals(expected, actual);
   }
 
   @Test

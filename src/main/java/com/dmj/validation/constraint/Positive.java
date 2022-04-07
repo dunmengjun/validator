@@ -40,7 +40,7 @@ public @interface Positive {
 
   String message() default "";
 
-  Class<?>[] groups() default {};
+  Class<?>[] groups() default Default.class;
 
   Class<?>[] unions() default {};
 
