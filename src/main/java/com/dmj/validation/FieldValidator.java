@@ -15,7 +15,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Builder;
 import lombok.Getter;
@@ -75,19 +74,7 @@ public class FieldValidator extends SelfValidator {
     if (annotation == null) {
       return source;
     }
-    Matcher matcher = pattern.matcher(source);
-    while (matcher.find()) {
-      String key = matcher.group();
-      String keyClone = key.substring(1, key.length() - 1).trim();
-      try {
-        Object value = invokeMethod(annotation, keyClone);
-        if (value != null) {
-          source = source.replace(key, value.toString());
-        }
-      } catch (Exception ignored) {
-      }
-    }
-    return source;
+    return StringUtils.format(source, (index, key) -> invokeMethod(annotation, key));
   }
 
   public static class TypedConstraintValidator implements ConstraintValidator<Object, Annotation> {

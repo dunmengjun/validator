@@ -1,5 +1,6 @@
 package com.dmj.validation;
 
+import static com.dmj.validation.config.GlobalConfig.getMessage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.dmj.validation.ValidationResult.UnionResult;
@@ -88,38 +89,30 @@ public class SingleValidatorTest {
 
   static Stream<Arguments> errorGenerator() {
     return Stream.of(
-        Arguments.of(new SingleBean(), NotNull.class, "name", "It must not be null"),
-        Arguments.of(new SingleBean(), NotBlank.class, "name",
-            "It must not be null and must contain at least one non-whitespace character"),
-        Arguments.of(new SingleBean(), NotEmpty.class, "name", "It must not be null nor empty"),
-        Arguments.of(new SingleBean("a"), Size.class, "name",
-            "It must be between the specified boundaries[2, 4]"),
-        Arguments.of(new SingleBean("a"), Pattern.class, "name",
-            "It must match the regular expression \\d+"),
-        Arguments.of(new SingleBean("a"), Email.class, "name",
-            "It must be a well-formed email address. RFC5322"),
-        Arguments.of(new SingleBean("123"), Digits.class, "name",
-            "It must be a number within accepted range[2, 3]"),
-        Arguments.of(new SingleBean(false), AssertTrue.class, "flag", "It must be true"),
-        Arguments.of(new SingleBean(true), AssertFalse.class, "flag", "It must be false"),
-        Arguments.of(new SingleBean(-1), Positive.class, "ints", "It must be a positive number"),
-        Arguments.of(new SingleBean(0), Positive.class, "ints", "It must be a positive number"),
+        Arguments.of(new SingleBean(), NotNull.class, "name", getMessage(NotNull.class)),
+        Arguments.of(new SingleBean(), NotBlank.class, "name", getMessage(NotBlank.class)),
+        Arguments.of(new SingleBean(), NotEmpty.class, "name", getMessage(NotEmpty.class)),
+        Arguments.of(new SingleBean("a"), Size.class, "name", getMessage(Size.class, 2, 4)),
+        Arguments.of(new SingleBean("a"), Pattern.class, "name", getMessage(Pattern.class, "\\d+")),
+        Arguments.of(new SingleBean("a"), Email.class, "name", getMessage(Email.class)),
+        Arguments.of(new SingleBean("123"), Digits.class, "name", getMessage(Digits.class, 2, 3)),
+        Arguments.of(new SingleBean(false), AssertTrue.class, "flag", getMessage(AssertTrue.class)),
+        Arguments.of(new SingleBean(true), AssertFalse.class, "flag",
+            getMessage(AssertFalse.class)),
+        Arguments.of(new SingleBean(-1), Positive.class, "ints", getMessage(Positive.class)),
+        Arguments.of(new SingleBean(0), Positive.class, "ints", getMessage(Positive.class)),
         Arguments.of(new SingleBean(-1), PositiveOrZero.class, "ints",
-            "It must be a positive number or 0"),
-        Arguments.of(new SingleBean(1), Negative.class, "ints",
-            "It must be a negative number"),
-        Arguments.of(new SingleBean(0), Negative.class, "ints",
-            "It must be a negative number"),
+            getMessage(PositiveOrZero.class)),
+        Arguments.of(new SingleBean(1), Negative.class, "ints", getMessage(Negative.class)),
+        Arguments.of(new SingleBean(0), Negative.class, "ints", getMessage(Negative.class)),
         Arguments.of(new SingleBean(1), NegativeOrZero.class, "ints",
-            "It must be a negative number or 0"),
-        Arguments.of(new SingleBean(99), Min.class, "ints",
-            "It must be higher or equal to the minimum 100"),
-        Arguments.of(new SingleBean(201), Max.class, "ints",
-            "It must be lower or equal to the maximum 200"),
+            getMessage(NegativeOrZero.class)),
+        Arguments.of(new SingleBean(99), Min.class, "ints", getMessage(Min.class, 100)),
+        Arguments.of(new SingleBean(201), Max.class, "ints", getMessage(Max.class, 200)),
         Arguments.of(new SingleBean(0.32), DecimalMin.class, "decimal",
-            "It must be higher or equal(true) to the minimum 1.32"),
+            getMessage(DecimalMin.class, true, 1.32)),
         Arguments.of(new SingleBean(11.32), DecimalMax.class, "decimal",
-            "It must be lower or equal(true) to the minimum 10.32")
+            getMessage(DecimalMax.class, true, 10.32))
     );
   }
 }

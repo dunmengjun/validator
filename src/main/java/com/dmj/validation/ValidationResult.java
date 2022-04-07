@@ -30,7 +30,7 @@ public class ValidationResult {
       return new UnionResult(null, Lists.of(FieldResult.from(path, message)));
     }
 
-    public static UnionResult from(List<FieldResult> fieldResults, String message) {
+    public static UnionResult from(String message, List<FieldResult> fieldResults) {
       return new UnionResult(message, fieldResults);
     }
 

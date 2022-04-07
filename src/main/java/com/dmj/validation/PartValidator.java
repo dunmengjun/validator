@@ -31,7 +31,7 @@ public class PartValidator extends SelfValidator {
         .flatMap(Collection::stream)
         .flatMap(unionResult -> unionResult.getFieldResults().stream())
         .collect(Collectors.toList());
-    return Lists.of(UnionResult.from(fieldResults, message));
+    return Lists.of(UnionResult.from(message, fieldResults));
   }
 
   @Override

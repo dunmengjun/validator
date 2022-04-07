@@ -1,9 +1,15 @@
 package com.dmj.validation;
 
+import static com.dmj.validation.config.GlobalConfig.getMessage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.dmj.validation.ValidationResult.UnionResult;
 import com.dmj.validation.bean.ConfigurationBean;
+import com.dmj.validation.constraint.Max;
+import com.dmj.validation.constraint.Min;
+import com.dmj.validation.constraint.NotBlank;
+import com.dmj.validation.constraint.NotEmpty;
+import com.dmj.validation.constraint.NotNull;
 import com.dmj.validation.validator.union.AnyMatch;
 import com.dmj.validation.validator.union.FullMatch;
 import org.junit.jupiter.api.Test;
@@ -26,7 +32,7 @@ public class ConfigurationValidatorTest {
     ValidationResult actual = BeanValidator.validate(bean);
 
     ValidationResult expected = ValidationResult.error(
-        UnionResult.from("name", "It must not be null nor empty")
+        UnionResult.from("name", getMessage(NotEmpty.class))
     );
     assertEquals(expected, actual);
   }
@@ -38,7 +44,7 @@ public class ConfigurationValidatorTest {
     ValidationResult actual = BeanValidator.validate(bean);
 
     ValidationResult expected = ValidationResult.error(
-        UnionResult.from("name", "It must not be null nor empty")
+        UnionResult.from("name", getMessage(NotEmpty.class))
     );
     assertEquals(expected, actual);
   }
@@ -59,9 +65,8 @@ public class ConfigurationValidatorTest {
     ValidationResult actual = BeanValidator.validate(bean, AnyMatch.class);
 
     ValidationResult expected = ValidationResult.error(
-        UnionResult.from("name",
-            "It must not be null and must contain at least one non-whitespace character"),
-        UnionResult.from("number", "It must be lower or equal to the maximum 20")
+        UnionResult.from("name", getMessage(NotBlank.class)),
+        UnionResult.from("number", getMessage(Max.class, 20))
     );
     assertEquals(expected, actual);
   }
@@ -73,7 +78,7 @@ public class ConfigurationValidatorTest {
     ValidationResult actual = BeanValidator.validate(bean, FullMatch.class);
 
     ValidationResult expected = ValidationResult.error(
-        UnionResult.from("name", "It must not be null")
+        UnionResult.from("name", getMessage(NotNull.class))
     );
     assertEquals(expected, actual);
   }
@@ -85,8 +90,8 @@ public class ConfigurationValidatorTest {
     ValidationResult actual = BeanValidator.validate(bean, FullMatch.class);
 
     ValidationResult expected = ValidationResult.error(
-        UnionResult.from("name", "It must not be null"),
-        UnionResult.from("number", "It must be higher or equal to the minimum 10")
+        UnionResult.from("name", getMessage(NotNull.class)),
+        UnionResult.from("number", getMessage(Min.class, 10))
     );
     assertEquals(expected, actual);
   }

@@ -18,6 +18,7 @@ import com.dmj.validation.constraint.Pattern;
 import com.dmj.validation.constraint.Positive;
 import com.dmj.validation.constraint.PositiveOrZero;
 import com.dmj.validation.constraint.Size;
+import com.dmj.validation.utils.StringUtils;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,5 +52,10 @@ public class GlobalConfig {
         "It must be lower or equal({inclusive}) to the minimum {value}");
     defaultMessageMap.put(AssertTrue.class, "It must be true");
     defaultMessageMap.put(AssertFalse.class, "It must be false");
+  }
+
+  public static <T extends Annotation> String getMessage(Class<T> annotation, Object... args) {
+    String message = defaultMessageMap.get(annotation);
+    return StringUtils.format(message, args);
   }
 }
