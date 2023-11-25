@@ -22,6 +22,10 @@ import lombok.Getter;
 
 public class BeanValidator {
 
+  public static final String FLAG_DOT = ".";
+  public static final String ARRAY_CHILD_FORMAT = "%s[%s]";
+  public static final String ARRAY_FORMAT = "%s[]";
+
   public static ValidationResult validate(Object bean) {
     return validate(bean, Default.class);
   }
@@ -48,7 +52,7 @@ public class BeanValidator {
   private static List<SelfValidator> toSelfValidator(Map<String, PartValidator> map) {
     return map.values().stream()
         .filter(PartValidator::isActive)
-        .map(validator -> (SelfValidator) validator)
+        .map(SelfValidator.class::cast)
         .collect(Collectors.toList());
   }
 
@@ -61,17 +65,17 @@ public class BeanValidator {
       ValidationBean validationBean1 = entry.getValue();
       Object object = ReflectionUtils.getValue(field, bean.getBean());
       Class<?> valueType = field.getType();
-      String prefix = StringUtils.join(".", bean.getPath(), field.getName());
+      String prefix = StringUtils.join(FLAG_DOT, bean.getPath(), field.getName());
       if (Collection.class.isAssignableFrom(valueType)) {
         if (object == null) {
-          PathBean from = PathBean.from(String.format("%s[]", prefix), null);
+          PathBean from = PathBean.from(String.format(ARRAY_FORMAT, prefix), null);
           Map<String, PartValidator> map = extendValidatorMap(validationBean1, from);
           validatorMap = Maps.merge(validatorMap, map, PartValidator::add);
         } else {
           Collection<?> value = (Collection<?>) object;
           int index = 0;
           for (Object obj : value) {
-            PathBean from = PathBean.from(String.format("%s[%s]", prefix, index), obj);
+            PathBean from = PathBean.from(String.format(ARRAY_CHILD_FORMAT, prefix, index), obj);
             Map<String, PartValidator> map = extendValidatorMap(validationBean1, from);
             validatorMap = Maps.merge(validatorMap, map, PartValidator::add);
             index++;
@@ -106,7 +110,7 @@ public class BeanValidator {
         .collect(Collectors.toList());
     List<SelfValidator> selfValidators = fields.stream()
         .map(validationField -> toFieldValidator(validationField, bean))
-        .map(fieldValidator -> (SelfValidator) fieldValidator)
+        .map(SelfValidator.class::cast)
         .collect(Collectors.toList());
     return PartValidator.builder().isActive(isActive).message(unionValue.getMessage())
         .validators(validators).selfValidators(selfValidators).build();
@@ -121,7 +125,8 @@ public class BeanValidator {
     if (bean.getBean() != null) {
       value = ReflectionUtils.getValue(field1, bean.getBean());
     }
-    return FieldValidator.builder().path(StringUtils.join(".", bean.getPath(), field1.getName()))
+    return FieldValidator.builder()
+        .path(StringUtils.join(FLAG_DOT, bean.getPath(), field1.getName()))
         .value(value).valueType(field1.getType()).message(field.getMessage())
         .annotation(field.getAnnotation()).isNullValid(field.isNullValid())
         .validators(constraintValidators).build();

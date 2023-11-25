@@ -24,12 +24,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -44,7 +41,7 @@ public class ValidationBeanLayout {
   @AllArgsConstructor
   @Getter
   @EqualsAndHashCode
-  static class ValidationField {
+  public static class ValidationField {
 
     private Annotation annotation;
     private boolean isNullValid;
@@ -72,7 +69,7 @@ public class ValidationBeanLayout {
   @Getter
   @AllArgsConstructor
   @EqualsAndHashCode
-  static class ValidationUnion {
+  public static class ValidationUnion {
 
     private UnionValue unionValue;
     private List<ValidationField> fields;
@@ -99,7 +96,7 @@ public class ValidationBeanLayout {
 
   @AllArgsConstructor
   @Getter
-  static class ValidationBean {
+  public static class ValidationBean {
 
     private ConfigurationValue configuration;
     private Map<Field, ValidationBean> needExtendBeanMap;
@@ -117,13 +114,6 @@ public class ValidationBeanLayout {
       if (DEFAULT_VALUE.equals(configuration) && !DEFAULT_VALUE.equals(value)) {
         configuration = value;
       }
-    }
-
-    public ValidationBean add(ValidationBean newValue) {
-      this.validationUnionMap = Stream.of(this.validationUnionMap, newValue.validationUnionMap)
-          .flatMap(map -> map.entrySet().stream())
-          .collect(Collectors.toMap(Entry::getKey, Entry::getValue, ValidationUnion::add));
-      return this;
     }
   }
 
