@@ -15,7 +15,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -38,8 +37,6 @@ public class FieldValidator extends SelfValidator {
   private Object value;
 
   private List<TypedConstraintValidator> validators;
-
-  private static final Pattern pattern = Pattern.compile("\\{(.*?)}");
 
   @Override
   public boolean doValid() {
@@ -86,8 +83,8 @@ public class FieldValidator extends SelfValidator {
 
     public TypedConstraintValidator(ConstraintValidator<?, ?> validator) {
       ParameterizedType parameterizedType = Arrays.stream(
-              validator.getClass().getGenericInterfaces()).map(t -> (ParameterizedType) t)
-          .filter(t -> t.getRawType().equals(ConstraintValidator.class)).findAny()
+              validator.getClass().getGenericInterfaces()).map(ParameterizedType.class::cast)
+          .filter(t -> ConstraintValidator.class.equals(t.getRawType())).findAny()
           .orElseThrow(NotValidatorException::new);
       Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
       Type argument = actualTypeArguments[0];
