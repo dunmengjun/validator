@@ -3,6 +3,7 @@ package com.dmj.validation;
 import com.dmj.validation.ValidationResult.FieldResult;
 import com.dmj.validation.ValidationResult.UnionResult;
 import com.dmj.validation.utils.Lists;
+import com.dmj.validation.utils.StringUtils;
 import com.dmj.validation.validator.UnionValidator;
 import java.util.Collection;
 import java.util.List;
@@ -24,8 +25,13 @@ public class PartValidator extends SelfValidator {
 
   @Override
   public boolean doValid() {
-    return validators.stream()
-        .allMatch(validator -> validator.valid(new ValidatorContext(selfValidators)));
+    ValidatorContext validatorContext = new ValidatorContext(selfValidators);
+    boolean flag = validators.stream()
+        .allMatch(validator -> validator.valid(validatorContext));
+    if (StringUtils.isNotBlank(validatorContext.getErrorMessage())) {
+      this.message = validatorContext.getErrorMessage();
+    }
+    return flag;
   }
 
   @Override
@@ -43,6 +49,16 @@ public class PartValidator extends SelfValidator {
     return selfValidators.stream()
         .map(SelfValidator::getPath)
         .collect(Collectors.joining(","));
+  }
+
+  @Override
+  protected String getFieldPath() {
+    return null;
+  }
+
+  @Override
+  protected Object getValue() {
+    return null;
   }
 
   public PartValidator add(PartValidator partValidator) {

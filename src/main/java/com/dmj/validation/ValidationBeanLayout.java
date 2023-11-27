@@ -117,19 +117,15 @@ public class ValidationBeanLayout {
     }
   }
 
-  public Optional<ValidationBean> get(Class<?> group) {
-    return Optional.ofNullable(validationBeanMap.get(group));
-  }
-
-  public static Optional<ValidationBean> get(Object bean, Class<?> group) {
-    return get(bean.getClass(), group);
-  }
-
-  private static Optional<ValidationBean> get(Class<?> beanClass,
+  public static Optional<ValidationBean> get(Class<?> beanClass,
       Class<?> group) {
     ValidationBeanLayout validationBeanLayout = validationBeanLayoutMap
         .computeIfAbsent(beanClass, ValidationBeanLayout::createLayout);
     return validationBeanLayout.get(group);
+  }
+
+  public Optional<ValidationBean> get(Class<?> group) {
+    return Optional.ofNullable(validationBeanMap.get(group));
   }
 
   private static List<Annotation> getAnnotationList(Annotation annotation) {
@@ -207,9 +203,9 @@ public class ValidationBeanLayout {
       }
       beanClass = beanClass.getSuperclass();
     }
-    ValidationBeanLayout value = new ValidationBeanLayout(groupMap);
-    validationBeanLayoutMap.put(originBeanClass, value);
-    return value;
+    ValidationBeanLayout beanLayout = new ValidationBeanLayout(groupMap);
+    validationBeanLayoutMap.put(originBeanClass, beanLayout);
+    return beanLayout;
   }
 
   private static Class<?> getFieldType(Field field) {

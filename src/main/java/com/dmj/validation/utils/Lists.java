@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
@@ -15,10 +17,18 @@ public class Lists {
 
   @SafeVarargs
   public static <T> List<T> of(T... objects) {
-    if (objects == null) {
+    if (Objects.isNull(objects)) {
       return new ArrayList<>(0);
     }
     return Arrays.stream(objects).collect(Collectors.toList());
+  }
+
+  public static <T> List<T> of(List<T> list, T object) {
+    List<T> newList = Optional.ofNullable(list).map(ArrayList::new).orElse(new ArrayList<>());
+    if (Objects.nonNull(object)) {
+      newList.add(object);
+    }
+    return newList;
   }
 
   public static <T> List<T> of(Set<T> set) {
@@ -57,7 +67,7 @@ public class Lists {
 
   private int getFreq(final Object obj, final Map<?, Integer> freqMap) {
     final Integer count = freqMap.get(obj);
-    if (count != null) {
+    if (Objects.nonNull(count)) {
       return count;
     }
     return 0;

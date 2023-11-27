@@ -28,9 +28,9 @@ public abstract class SelfValidator {
 
   protected abstract List<UnionResult> getInnerResults();
 
-  protected void setStatus(int status) {
-    this.status = status;
-  }
-
   protected abstract String getPath();
+
+  protected abstract String getFieldPath();
+
+  protected abstract Object getValue();
 }

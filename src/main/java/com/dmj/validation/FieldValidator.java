@@ -11,10 +11,12 @@ import com.dmj.validation.utils.Lists;
 import com.dmj.validation.utils.StringUtils;
 import com.dmj.validation.validator.ConstraintValidator;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -23,6 +25,8 @@ public class FieldValidator extends SelfValidator {
 
   @Getter
   private String path;
+
+  private List<Field> fields;
 
   @Getter
   private String message;
@@ -65,6 +69,11 @@ public class FieldValidator extends SelfValidator {
       }
     }
     return Lists.of(UnionResult.from(path, format(localMessage, annotation)));
+  }
+
+  @Override
+  protected String getFieldPath() {
+    return fields.stream().map(Field::getName).collect(Collectors.joining("."));
   }
 
   private String format(String source, Annotation annotation) {

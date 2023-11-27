@@ -1,5 +1,7 @@
 package com.dmj.validation;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.dmj.validation.FieldValidator.TypedConstraintValidator;
 import com.dmj.validation.ValidationBeanLayout.ValidationBean;
 import com.dmj.validation.ValidationBeanLayout.ValidationField;
@@ -7,11 +9,13 @@ import com.dmj.validation.ValidationBeanLayout.ValidationUnion;
 import com.dmj.validation.ValidationResult.UnionResult;
 import com.dmj.validation.constraint.Default;
 import com.dmj.validation.exception.ReflectionException;
+import com.dmj.validation.utils.Lists;
 import com.dmj.validation.utils.Maps;
 import com.dmj.validation.utils.ReflectionUtils;
 import com.dmj.validation.utils.StringUtils;
 import com.dmj.validation.validator.UnionValidator;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +35,7 @@ public class BeanValidator {
   }
 
   public static ValidationResult validate(Object bean, Class<?> group) {
-    return ValidationBeanLayout.get(bean, group).map(b -> validate(b, bean))
+    return ValidationBeanLayout.get(bean.getClass(), group).map(b -> validate(b, bean))
         .orElse(ValidationResult.ok());
   }
 
@@ -57,33 +61,35 @@ public class BeanValidator {
   }
 
   private static Map<String, PartValidator> extendValidatorMap(ValidationBean validationBean,
-      PathBean bean) {
+      PathBean rootPath) {
     Map<String, PartValidator> validatorMap = getPartValidatorMap(
-        validationBean.getValidationUnionMap(), bean);
+        validationBean.getValidationUnionMap(), rootPath);
     for (Entry<Field, ValidationBean> entry : validationBean.getNeedExtendBeanMap().entrySet()) {
       Field field = entry.getKey();
-      ValidationBean validationBean1 = entry.getValue();
-      Object object = ReflectionUtils.getValue(field, bean.getBean());
+      ValidationBean vBean = entry.getValue();
+      Object valueObj = ReflectionUtils.getValue(field, rootPath.getBean());
       Class<?> valueType = field.getType();
-      String prefix = StringUtils.join(FLAG_DOT, bean.getPath(), field.getName());
+      String prefix = StringUtils.join(FLAG_DOT, rootPath.getPath(), field.getName());
       if (Collection.class.isAssignableFrom(valueType)) {
-        if (object == null) {
-          PathBean from = PathBean.from(String.format(ARRAY_FORMAT, prefix), null);
-          Map<String, PartValidator> map = extendValidatorMap(validationBean1, from);
+        if (valueObj == null) {
+          PathBean path = PathBean.from(Lists.of(rootPath.getFields(), field),
+              String.format(ARRAY_FORMAT, prefix), null);
+          Map<String, PartValidator> map = extendValidatorMap(vBean, path);
           validatorMap = Maps.merge(validatorMap, map, PartValidator::add);
         } else {
-          Collection<?> value = (Collection<?>) object;
+          Collection<?> collection = (Collection<?>) valueObj;
           int index = 0;
-          for (Object obj : value) {
-            PathBean from = PathBean.from(String.format(ARRAY_CHILD_FORMAT, prefix, index), obj);
-            Map<String, PartValidator> map = extendValidatorMap(validationBean1, from);
+          for (Object obj : collection) {
+            PathBean path = PathBean.from(new ArrayList<>(rootPath.getFields()),
+                String.format(ARRAY_CHILD_FORMAT, prefix, index), obj);
+            Map<String, PartValidator> map = extendValidatorMap(vBean, path);
             validatorMap = Maps.merge(validatorMap, map, PartValidator::add);
             index++;
           }
         }
       } else {
-        PathBean value1 = PathBean.from(prefix, object);
-        Map<String, PartValidator> map = extendValidatorMap(validationBean1, value1);
+        Map<String, PartValidator> map = extendValidatorMap(vBean,
+            PathBean.from(Lists.of(rootPath.getFields(), field), prefix, valueObj));
         validatorMap = Maps.merge(validatorMap, map, PartValidator::add);
       }
     }
@@ -93,7 +99,7 @@ public class BeanValidator {
   private static Map<String, PartValidator> getPartValidatorMap(
       Map<Integer, ValidationUnion> validationUnionMap, PathBean bean) {
     return validationUnionMap.entrySet().stream().collect(
-        Collectors.toMap(entry -> String.valueOf(entry.getKey()),
+        toMap(entry -> String.valueOf(entry.getKey()),
             entry -> toPartValidator(entry.getKey(), entry.getValue(), bean)));
   }
 
@@ -127,6 +133,7 @@ public class BeanValidator {
     }
     return FieldValidator.builder()
         .path(StringUtils.join(FLAG_DOT, bean.getPath(), field1.getName()))
+        .fields(Lists.of(bean.getFields(), field1))
         .value(value).valueType(field1.getType()).message(field.getMessage())
         .annotation(field.getAnnotation()).isNullValid(field.isNullValid())
         .validators(constraintValidators).build();
@@ -144,15 +151,16 @@ public class BeanValidator {
   @Getter
   static class PathBean {
 
+    private List<Field> fields;
     private String path;
     private Object bean;
 
     public static PathBean from(Object bean) {
-      return new PathBean("", bean);
+      return new PathBean(new ArrayList<>(), "", bean);
     }
 
-    public static PathBean from(String path, Object bean) {
-      return new PathBean(path, bean);
+    public static PathBean from(List<Field> fields, String path, Object bean) {
+      return new PathBean(fields, path, bean);
     }
   }
 }

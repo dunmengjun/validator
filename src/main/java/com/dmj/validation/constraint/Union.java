@@ -28,9 +28,9 @@ public @interface Union {
 
 
   /**
-   * Defines several {@link Size} annotations on the same element.
+   * Defines several {@link Union} annotations on the same element.
    *
-   * @see Size
+   * @see Union
    */
   @Target({TYPE})
   @Retention(RUNTIME)
