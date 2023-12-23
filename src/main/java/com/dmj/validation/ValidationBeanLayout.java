@@ -119,8 +119,19 @@ public class ValidationBeanLayout {
 
   public static Optional<ValidationBean> get(Class<?> beanClass,
       Class<?> group) {
-    ValidationBeanLayout validationBeanLayout = validationBeanLayoutMap
-        .computeIfAbsent(beanClass, ValidationBeanLayout::createLayout);
+    ValidationBeanLayout validationBeanLayout = validationBeanLayoutMap.get(beanClass);
+    if (Objects.nonNull(validationBeanLayout)) {
+      return validationBeanLayout.get(group);
+    }
+    //noinspection SynchronizationOnLocalVariableOrMethodParameter
+    synchronized (beanClass) {
+      validationBeanLayout = validationBeanLayoutMap.get(beanClass);
+      if (Objects.nonNull(validationBeanLayout)) {
+        return validationBeanLayout.get(group);
+      }
+      validationBeanLayout = createLayout(beanClass);
+      validationBeanLayoutMap.put(beanClass, validationBeanLayout);
+    }
     return validationBeanLayout.get(group);
   }
 
@@ -203,9 +214,7 @@ public class ValidationBeanLayout {
       }
       beanClass = beanClass.getSuperclass();
     }
-    ValidationBeanLayout beanLayout = new ValidationBeanLayout(groupMap);
-    validationBeanLayoutMap.put(originBeanClass, beanLayout);
-    return beanLayout;
+    return new ValidationBeanLayout(groupMap);
   }
 
   private static Class<?> getFieldType(Field field) {
