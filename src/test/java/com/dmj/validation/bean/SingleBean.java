@@ -19,8 +19,10 @@ import com.dmj.validation.constraint.Positive;
 import com.dmj.validation.constraint.PositiveOrZero;
 import com.dmj.validation.constraint.Size;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @NoArgsConstructor
+@ToString
 public class SingleBean {
 
   @NotNull(groups = NotNull.class)

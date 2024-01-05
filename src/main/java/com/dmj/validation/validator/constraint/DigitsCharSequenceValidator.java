@@ -6,14 +6,29 @@ import java.util.regex.Pattern;
 
 public class DigitsCharSequenceValidator implements ConstraintValidator<CharSequence, Digits> {
 
+  private static final Pattern pattern = Pattern.compile("^-?\\d+(\\.\\d+)?$");
+
   @Override
   public boolean valid(CharSequence value, Digits annotation) {
     int integer = annotation.integer() > 0 ? annotation.integer() : 1;
     int fraction = Math.max(annotation.fraction(), 0);
-    if (fraction == 0) {
-      return Pattern.matches(String.format("\\d{%s}", integer), value);
-    } else {
-      return Pattern.matches(String.format("\\d{%s}.\\d{%s}", integer, fraction), value);
+    if (value.length() == 1 && value.charAt(0) == '0') {
+      return true;
     }
+    boolean matches = pattern.matcher(value).matches();
+    if (!matches) {
+      return false;
+    }
+    int length = value.length();
+    int dotIndex = length;
+    for (int i = 0; i < length; i++) {
+      if (value.charAt(i) == '.') {
+        dotIndex = i;
+        break;
+      }
+    }
+    int integerNum = dotIndex;
+    int fractionNum = dotIndex < length ? length - dotIndex - 1 : 0;
+    return integerNum <= integer && fractionNum <= fraction;
   }
 }

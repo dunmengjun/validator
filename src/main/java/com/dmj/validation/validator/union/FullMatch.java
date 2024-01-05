@@ -13,7 +13,7 @@ public class FullMatch implements UnionValidator {
 
   @Override
   public boolean valid(ValidatorContext context) {
-    List<Boolean> collect = context.getValidators().stream()
+    List<Boolean> collect = context.getValidators().parallelStream()
         .map(SelfValidator::valid)
         .collect(Collectors.toList());
     return collect.stream().allMatch(b -> b);

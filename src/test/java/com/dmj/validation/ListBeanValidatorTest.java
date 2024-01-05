@@ -65,4 +65,21 @@ public class ListBeanValidatorTest {
     );
     assertEquals(expected, actual);
   }
+
+  @Test
+  void should_return_two_inner_name_not_empty_error_when_validate_given_default_group_and_invalid_bean() {
+    ListBean listBean = new ListBean();
+    listBean.setInnerBeans(Lists.of(new InnerBean(""), new InnerBean("")));
+
+    ValidationResult actual = BeanValidator.validate(listBean);
+
+    ValidationResult expected = ValidationResult.error(
+        UnionResult.from(
+            FieldResult.from("name", getMessage(NotBlank.class)),
+            FieldResult.from("innerBeans[0].innerName", getMessage(NotBlank.class)),
+            FieldResult.from("innerBeans[1].innerName", getMessage(NotBlank.class))
+        )
+    );
+    assertEquals(expected, actual);
+  }
 }
